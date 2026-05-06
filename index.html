@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+  <html class="dark" lang="en"><head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+  <style>
+          :root {
+              --void: #0D0D0D;
+            --surface: #0d1515;
+            --slate: #1A1A1B;
+            --on-surface: #dce4e4;
+                          --signal-cyan: #00F2FF;
+            --warning-ember: #FF4D00;
+              }
+        body {
+                          background-color: var(--surface);
+            color: var(--on-surface);
+            overflow-x: hidden;
+}
+        .material-symbols-outlined {
+                      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+        .signal-flow-bg {
+                      background-image: 
+                          linear-gradient(to right, #2A2A2C 1px, transparent 1px),
+                          linear-gradient(to bottom, #2A2A2C 1px, transparent 1px);
+            background-size: 40px 40px;
+}
+        .entropy-glow {
+                      box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+}
+        .pulse-glow-border {
+                      box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+        .heatmap-grid {
+                      display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 2px;
+}
+        .heatmap-cell {
+                      aspect-ratio: 1;
+            background: rgba(0, 242, 255, 0.05);
+            border-radius: 1px;
+}
+        .heatmap-cell.hot { background: var(--warning-ember); box-shadow: 0 0 8px var(--warning-ember); }
+        .heatmap-cell.active { background: var(--signal-cyan); opacity: 0.8; }
+
+        @media (max-width: 768px) {
+            .heatmap-grid {
+                              grid-template-columns: repeat(10, 1fr);
+                grid-template-rows: repeat(20, 1fr);
+        }
+}
+
+        .pipeline-line {
+                      position: absolute;
+            top: 32px;
+            left: 12.5%;
+            right: 12.5%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--signal-cyan), transparent);
+            opacity: 0.3;
+            z-index: 0;
+}
+
+        details summary::-webkit-details-marker {
+                      display: none;
+}
+    </style>
+          <script id="tailwind-config">
+                  tailwind.config = {
+                      darkMode: "class",
+                      theme: {
+                extend: {
+                    "colors": {
+                        "dust": "#8A8A8A",
+                                                  "surface-container-high": "#232b2c",
+                                                  "inverse-surface": "#dce4e4",
+                                                  "error-container": "#93000a",
+                                                  "secondary-container": "#ff571a",
+                                                  "surface": "#0d1515",
+                                                  "on-error": "#690005",
+                                                  "surface-tint": "#00dbe7",
+                                                  "on-tertiary": "#3b2f00",
+                                                  "void": "#0D0D0D",
+                                                  "tertiary": "#fff6e4",
+                                                  "inverse-primary": "#00696f",
+                                                  "on-background": "#dce4e4",
+                                                  "surface-container-low": "#151d1e",
+                                                  "on-primary-container": "#006a71",
+                                                  "primary-fixed-dim": "#00dbe7",
+                                                  "ghost-white": "#E8E8E8",
+                                                  "surface-container-highest": "#2e3637",
+                                                  "outline": "#849495",
+                                                  "on-tertiary-container": "#725e00",
+                                                  "surface-container": "#192122",
+                                                  "warning-ember": "#FF4D00",
+                                                  "secondary-fixed-dim": "#ffb59e",
+                                                  "slate": "#1A1A1B",
+                                                  "inverse-on-surface": "#2a3232",
+                                                  "surface-bright": "#333b3b",
+                                                  "on-secondary-fixed-variant": "#852400",
+                                                  "secondary": "#ffb59e",
+                                                  "on-secondary": "#5e1700",
+                                                  "tertiary-fixed": "#ffe173",
+                                                  "pulse-glow": "rgba(0, 242, 255, 0.15)",
+                                                  "signal-cyan": "#00F2FF",
+                                                  "primary-container": "#00f2ff",
+                                                  "on-tertiary-fixed": "#221b00",
+                                                  "on-error-container": "#ffdad6",
+
+                          "on-tertiary-fixed": "#221b00",
+                          "on-error-container": "#ffdad6",
+                          "surface-container-lowest": "#080f10",
+                          "on-primary-fixed-variant": "#004f54",
+                          "secondary-fixed": "#ffdbd0",
+                          "outline-variant": "#3a494b",
+                          "on-secondary-container": "#521300",
+                          "on-secondary-fixed": "#3a0b00",
+                          "graphite": "#2A2A2C",
+                          "background": "#0d1515",
+                          "primary": "#e1fdff",
+                          "surface-dim": "#0d1515",
+                          "on-surface": "#dce4e4",
+                          "error": "#ffb4ab",
+                          "surface-variant": "#2e3637",
+                          "on-primary": "#00363a",
+                          "tertiary-fixed-dim": "#e8c423",
+                          "on-surface-variant": "#b9cacb",
+                          "primary-fixed": "#74f5ff",
+                          "on-primary-fixed": "#002022",
+                          "tertiary-container": "#fed83a",
+                          "on-tertiary-fixed-variant": "#554500"
+                          },
+                          "borderRadius": {
+"DEFAULT": "0.25rem",
+  "lg": "0.5rem",
+  "xl": "0.75rem",
+  "full": "9999px"
+  },
+  "spacing": {
+"section-v-desktop": "120px",
+  "base": "8px",
+  "section-v-mobile": "64px",
+  "max-width": "1280px",
+  "gutter": "24px",
+  "card-gap": "32px"
+  },
+  "fontFamily": {
+"h3-card": ["Inter"],
+  "data-mono": ["JetBrains Mono"],
+  "body": ["Inter"],
+  "label-caps": ["JetBrains Mono"],
+  "display-hero": ["Inter"],
+  "h2-section": ["Inter"]
+  },
+  "fontSize": {
+"h3-card": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+  "data-mono": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+  "body": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+  "label-caps": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
+                          "display-hero": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "h2-section": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}]
+        }
+},
+},
+}
+</script>
+  </head>
+  <body class="font-body text-body bg-surface">
+  <!-- TopAppBar -->
+  <header class="bg-void/80 backdrop-blur-md text-signal-cyan fixed top-0 w-full z-50 border-b border-graphite h-16 md:h-20">
+  <div class="flex justify-between items-center w-full px-gutter max-w-max-width mx-auto h-full">
+  <div class="flex items-center gap-2 md:gap-4">
+  <span class="material-symbols-outlined text-signal-cyan" style="font-variation-settings: 'FILL' 0;">hub</span>
+  <span class="font-display-hero text-signal-cyan tracking-tighter text-xl md:text-2xl uppercase">AETHER</span>
+  </div>
+  <nav class="hidden md:flex items-center gap-8">
+  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#">PRODUCT</a>
+  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#pricing">PRICING</a>
+  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#">DOCS</a>
+  </nav>
+  <div class="flex items-center gap-4">
+  <button class="font-label-caps text-[10px] md:text-label-caps text-signal-cyan hover:underline transition-all">ACCESS TERMINAL</button>
+  <button class="md:hidden text-signal-cyan"><span class="material-symbols-outlined">menu</span></button>
+  </div>
+  </div>
+  </header>
+  <main class="relative pt-16 md:pt-20 overflow-hidden">
+  <!-- Background Signal Flow Grid -->
+  <div class="absolute inset-0 signal-flow-bg opacity-10 pointer-events-none -z-10"></div>
+  <!-- Hero Section -->
+  <section class="pt-section-v-mobile md:pt-section-v-desktop pb-16 text-center px-gutter bg-void">
+  <h1 class="font-display-hero text-3xl md:text-display-hero text-on-background mb-6 leading-tight max-w-4xl mx-auto uppercase">See the Chaos Before It Costs You</h1>
+<p class="text-dust max-w-2xl mx-auto mb-10 text-base md:text-lg">Aether turns raw data streams into living signal maps. Spot fraud, anomalies, and hidden patterns in seconds-not weeks. <span class="text-signal-cyan">Built for quant traders, security teams, and data engineers.</span></p>
+<div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
+  <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full md:w-auto px-8 py-4 bg-signal-cyan text-void font-label-caps font-bold hover:opacity-90 transition-all active:scale-95 duration-150 entropy-glow text-center flex items-center justify-center">
+                  START FREE SCAN
+              </a>
+  <a href="https://www.loom.com/share/placeholder" target="_blank" class="w-full md:w-auto px-8 py-4 border border-graphite text-on-surface font-label-caps font-bold hover:bg-slate transition-all active:scale-95 duration-150 flex items-center justify-center gap-2">
+  <span class="material-symbols-outlined text-lg">play_circle</span>
+                  WATCH THE X-RAY (60s)
+              </a>
+  </div>
+  <!-- Trust Bar -->
+  <div class="mb-16 border-t border-graphite/30 pt-12">
+  <p class="font-label-caps text-[10px] tracking-[0.3em] text-dust mb-8 uppercase">Built for teams at</p>
+<div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale contrast-125">
+<span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">BLOOMBERG</span>
+<span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">CITADEL</span>
+  <span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">PALANTIR</span>
+  <span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">JANE STREET</span>
+  </div>
+  </div>
+  <!-- Trust Badges / Stats Bar -->
+  <div class="flex flex-col md:flex-row justify-center items-stretch md:items-center opacity-60 max-w-3xl mx-auto">
+  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
+  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">ISO-27001</span>
+  <span class="text-[8px] text-dust uppercase font-data-mono">Certified</span>
+  </div>
+  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
+  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">SOC2 TYPE II</span>
+  <span class="text-[8px] text-dust uppercase font-data-mono">Compliant</span>
+  </div>
+  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
+  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">GDPR</span>
+  <span class="text-[8px] text-dust uppercase font-data-mono">Data Ready</span>
+  </div>
+  <div class="py-4 md:px-8">
+  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">HIPAA</span>
+  <span class="text-[8px] text-dust uppercase font-data-mono">Standard</span>
+  </div>
+  </div>
+  </section>
+  <!-- How It Works: Pipeline Section -->
+  <section class="py-section-v-mobile md:py-section-v-desktop bg-surface border-y border-graphite">
+  <div class="max-w-max-width mx-auto px-gutter">
+  <div class="text-center mb-16">
+  <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.4em] mb-4 block">PIPELINE ARCHITECTURE</span>
+  <h2 class="font-h2-section text-2xl md:text-h2-section text-on-background mb-4">How It Works</h2>
+</div>
+<div class="relative grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
+<div class="hidden md:block pipeline-line"></div>
+<!-- Step 1 -->
+  <div class="pipeline-node text-center group relative z-10">
+  <div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+  <span class="material-symbols-outlined text-signal-cyan text-3xl">sensors</span>
+  </div>
+  <h4 class="font-label-caps text-signal-cyan mb-2">01. INGEST</h4>
+  <p class="text-dust text-xs md:text-sm px-4">Raw telemetry stream capture across all endpoints.</p>
+</div>
+<!-- Step 2 -->
+  <div class="pipeline-node text-center group relative z-10">
+  <div class="w-16 h-16 bg-slate border border-signal-cyan rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform pulse-glow-border">
+  <span class="material-symbols-outlined text-signal-cyan text-3xl">calculate</span>
+  </div>
+  <h4 class="font-label-caps text-signal-cyan mb-2">02. CALCULATE</h4>
+  <h5 class="text-on-surface font-semibold text-sm mb-2 uppercase tracking-wide">Entropy Engine</h5>
+  <p class="text-dust text-xs md:text-sm px-4">Shannon entropy scored at byte-level in milliseconds.</p>
+</div>
+<!-- Step 3 -->
+<div class="pipeline-node text-center group relative z-10">
+<div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-signal-cyan text-3xl">rebase_edit</span>
+</div>
+  <h4 class="font-label-caps text-signal-cyan mb-2">03. CORRELATE</h4>
+  <p class="text-dust text-xs md:text-sm px-4">Cross-referencing event signals across the global mesh.</p>
+</div>
+<!-- Step 4 -->
+  <div class="pipeline-node text-center group relative z-10">
+  <div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+  <span class="material-symbols-outlined text-signal-cyan text-3xl">terminal</span>
+  </div>
+  <h4 class="font-label-caps text-signal-cyan mb-2">04. RESOLVE</h4>
+  <p class="text-dust text-xs md:text-sm px-4">Instant terminal deployment of corrective protocols.</p>
+  </div>
+  </div>
+  </div>
+  </section>
+  <!-- Entropy Heatmap Mockup (Dashboard Area) -->
+  <section class="py-section-v-mobile md:py-section-v-desktop bg-void relative">
+  <div class="max-w-max-width mx-auto px-gutter">
+  <div class="flex flex-col lg:flex-row gap-0 border border-graphite bg-surface-container-lowest overflow-hidden shadow-2xl">
+  <!-- Sidebar -->
+  <div class="w-full lg:w-64 bg-slate border-b lg:border-b-0 lg:border-r border-graphite p-6">
+  <div class="flex items-center gap-2 mb-8">
+  <div class="w-2 h-2 rounded-full bg-signal-cyan animate-pulse"></div>
+  <span class="font-label-caps text-[10px] text-on-surface-variant tracking-widest">LIVE SOURCES</span>
+  </div>
+  <div class="space-y-4">
+  <div class="flex items-center justify-between group cursor-default">
+  <span class="text-xs text-on-surface font-data-mono">Market Feed</span>
+  <span class="material-symbols-outlined text-signal-cyan text-sm">bar_chart</span>
+  </div>
+  <div class="flex items-center justify-between group cursor-default">
+  <span class="text-xs text-on-surface font-data-mono">Server Logs</span>
+  <span class="material-symbols-outlined text-dust text-sm">terminal</span>
+  </div>
+  <div class="flex items-center justify-between group cursor-default">
+  <span class="text-xs text-on-surface font-data-mono">Transactions</span>
+  <span class="material-symbols-outlined text-warning-ember text-sm">currency_exchange</span>
+  </div>
+  <div class="pt-8 mt-8 border-t border-graphite/50">
+  <div class="text-[9px] text-dust uppercase mb-2">Active Entropy</div>
+  <div class="text-xl font-data-mono text-signal-cyan">1.42 bit/B</div>
+  </div>
+  </div>
+  </div>
+  <!-- Heatmap Area -->
+  <div class="flex-grow p-4 md:p-8">
+  <div class="flex items-center justify-between mb-6">
+  <h3 class="font-label-caps text-xs text-signal-cyan">AETHER_XRAY_VIEW_001</h3>
+  <div class="flex gap-2">
+  <span class="text-[9px] font-data-mono text-dust">RES: 20x10_GRID</span>
+  </div>
+  </div>
+  <div class="heatmap-grid mb-8">
+  <!-- Cells generated via simulation for visual fidelity -->
+  <div class="heatmap-cell"></div><div class="heatmap-cell active"></div><div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell hot"></div>
+  <div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell active"></div><div class="heatmap-cell"></div>
+  <script>
+                              document.addEventListener('DOMContentLoaded', () => {
+                                  const grid = document.querySelector('.heatmap-grid');
+                                const totalCells = 200;
+                                const currentCells = grid.children.length;
+                                for(let i=0; i < totalCells - currentCells; i++) {
+                                    const cell = document.createElement('div');
+                                    cell.className = 'heatmap-cell';
+                                    if(Math.random() > 0.95) cell.classList.add('hot');
+                                    else if(Math.random() > 0.8) cell.classList.add('active');
+                                    grid.appendChild(cell);
+                                }
+});
+                        </script>
+                          </div>
+                          <!-- Updated Dashboard Stats -->
+                          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div class="p-4 bg-slate border border-graphite rounded-sm">
+                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Active Feed</div>
+                          <div class="text-signal-cyan font-data-mono text-sm">MARKET_MAIN</div>
+                          </div>
+                          <div class="p-4 bg-slate border border-graphite rounded-sm">
+                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Signal Loss</div>
+                          <div class="text-on-surface font-data-mono text-sm">0.02%</div>
+                          </div>
+                          <div class="p-4 bg-slate border border-graphite rounded-sm">
+                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Throughput</div>
+                          <div class="text-signal-cyan font-data-mono text-sm">1.48 TB/S</div>
+                          </div>
+                          <div class="p-4 bg-slate border-2 border-warning-ember/30 rounded-sm">
+                          <div class="text-[9px] text-warning-ember uppercase mb-1 tracking-widest">Anomalies</div>
+                          <div class="text-warning-ember font-data-mono text-sm font-bold">1,247</div>
+                          </div>
+                          </div>
+                          </div>
+                          </div>
+                          </div>
+                          </section>
+                          <!-- Comparison Table Section -->
+                          <section class="py-section-v-mobile md:py-section-v-desktop bg-surface px-gutter">
+                          <div class="max-w-4xl mxauto">
+                          <div class="text-center mb-16">
+                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">BENCHMARK PROTOCOLS</span>
+                          <h2 class="font-h2-section text-2xl md:text-3xl text-on-background mb-4">The Aether Edge</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead>
+<tr class="border-b border-graphite">
+<th class="py-6 px-4 text-left font-label-caps text-dust text-xs">CAPABILITY</th>
+<th class="py-6 px-4 text-center font-label-caps text-dust text-xs">EXCEL</th>
+                          <th class="py-6 px-4 text-center font-label-caps text-dust text-xs">PYTHON</th>
+                          <th class="py-6 px-4 text-center font-label-caps text-signal-cyan text-xs font-extrabold bg-signal-cyan/5">AETHER</th>
+                          </tr>
+                          </thead>
+                          <tbody class="text-sm">
+                          <tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
+                          <td class="py-6 px-4 text-on-surface-variant font-medium">Entropy Visualization</td>
+                          <td class="py-6 px-4 text-center text-dust/50">Manual / Static</td>
+                          <td class="py-6 px-4 text-center text-dust/80">Code-dependent</td>
+                          <td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5">Real-time Native</td>
+                          </tr>
+                          <tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
+                          <td class="py-6 px-4 text-on-surface-variant font-medium">Real-time Anomaly Detection</td>
+<td class="py-6 px-4 text-center text-dust/50">None</td>
+<td class="py-6 px-4 text-center text-dust/80">Delayed (Batch)</td>
+<td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5">In-stream (<1ms)</td>
+</tr>
+<tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
+<td class="py-6 px-4 text-on-surface-variant font-medium">Time to Insight</td>
+<td class="py-6 px-4 text-center text-dust/50">Weeks</td>
+<td class="py-6 px-4 text-center text-dust/80">Days</td>
+<td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5 font-data-mono">< 8 SEC</td>
+                          </tr>
+                          </tbody>
+                          </table>
+                          </div>
+                          </div>
+                          </section>
+                          <!-- Pricing Section -->
+                          <section class="py-section-v-mobile md:py-section-v-desktop max-w-max-width mx-auto px-gutter" id="pricing">
+                          <div class="text-center mb-16">
+                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">SUBSCRIPTION PROTOCOLS</span>
+                          <h2 class="font-h2-section text-2xl md:text-h2-section text-on-background mb-4">Choose Your Vector</h2>
+<p class="text-dust max-w-2xl mx-auto text-sm md:text-base">Select the monitoring tier that aligns with your operational complexity.</p>
+                          </div>
+                          <!-- Pricing Cards Wrapper: Reordered for mobile featured prominence -->
+                          <div class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 lg:gap-6">
+                          <!-- Card 1: Explorer -->
+                          <div class="order-2 lg:order-1 w-full lg:w-1/4 bg-slate border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                          <div class="mb-8">
+                          <span class="font-label-caps text-[10px] text-dust mb-2 block">ENTRY LEVEL</span>
+                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Explorer</h3>
+                          <div class="flex items-baseline gap-1">
+                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$0</span>
+                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
+                          </div>
+                          </div>
+                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  3 Active Stream Channels
+                                              </li>
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Basic Anomaly Detection
+                                              </li>
+                          </ul>
+                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-graphite text-signal-cyan font-label-caps text-xs hover:bg-pulse-glow transition-colors uppercase text-center">START FREE</a>
+                          </div><!-- Card 2: Signal -->
+                          <div class="order-3 lg:order-2 w-full lg:w-1/4 bg-slate border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                          <div class="mb-8">
+                          <span class="font-label-caps text-[10px] text-dust mb-2 block">OPERATIONAL TIER</span>
+                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Signal</h3>
+                          <div class="flex items-baseline gap-1">
+                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$29</span>
+                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
+                          </div>
+                          </div>
+                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Unlimited Stream Channels
+                                              </li>
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Neural Anomaly Synthesis
+                                              </li>
+                          </ul>
+                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-graphite text-signal-cyan font-label-caps text-xs hover:bg-pulse-glow transition-colors uppercase text-center">ESTABLISH LINK</a>
+                          </div>
+                          <!-- Card 3: Signal Pro (Prominent/Featured) -->
+                          <div class="order-1 lg:order-3 w-full lg:w-1/4 bg-slate border-2 border-signal-cyan p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300 relative pulse-glow-border lg:scale-110 z-20 mb-12 lg:mb-0">
+                          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-signal-cyan text-void font-label-caps py-1 px-4 text-[9px] tracking-[0.2em] font-bold shadow-[0_0_15px_rgba(0,242,255,0.5)]">MOST POPULAR</div>
+                          <div class="mb-8 pt-2">
+                          <span class="font-label-caps text-[10px] text-signal-cyan mb-2 block">POWER USER</span>
+                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Signal Pro</h3>
+                          <div class="flex items-baseline gap-1">
+                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$99</span>
+                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
+                          </div>
+                          </div>
+                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Dedicated Clusters
+                                              </li>
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Priority Support Protocol
+                                              </li>
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Advanced API Suite
+                                              </li>
+                          </ul>
+                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 bg-signal-cyan text-void font-label-caps font-bold text-xs hover:opacity-90 transition-opacity uppercase text-center">START TRIAL</a>
+                          </div>
+                          <!-- Card 4: Aether Core -->
+                          <div class="order-4 lg:order-4 w-full lg:w-1/4 bg-surface-container-highest border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
+                          <div class="mb-8">
+                          <span class="font-label-caps text-[10px] text-dust mb-2 block">ENTERPRISE CORE</span>
+                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Aether Core</h3>
+                          <div class="flex items-baseline gap-1">
+                          <span class="text-xl md:text-2xl font-bold text-signal-cyan font-data-mono">CUSTOM</span>
+                          </div>
+                          </div>
+                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  On-premise deployment
+                                              </li>
+                          <li class="flex items-center gap-3 text-on-surface-variant">
+                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
+                                                  Custom entropy models
+                                              </li>
+                          </ul>
+                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-signal-cyan text-signal-cyan font-label-caps text-xs hover:bg-signal-cyan/10 transition-colors uppercase text-center">REQUEST DEMO</a>
+                          </div>
+                          </div>
+                          </section>
+                          <!-- FAQ Section -->
+                          <section class="py-section-v-mobile md:py-section-v-desktop bg-surface border-t border-graphite">
+                          <div class="max-w-3xl mx-auto px-gutter">
+                          <div class="text-center mb-16">
+                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">KNOWLEDGE BASE</span>
+                          <h2 class="font-h2-section text-2xl md:text-3xl text-on-background mb-4">Common Questions</h2>
+                          </div>
+                          <div class="space-y-4">
+                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
+                          <summary class="flex justify-between items-center cursor-pointer list-none">
+                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">What file formats does Aether support?</span>
+                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
+                          </summary>
+                          <div class="pt-4 text-dust text-sm leading-relaxed">
+                                                  Aether natively ingests CSV, JSON, Parquet, and Avro formats. We also provide SDKs for streaming raw byte telemetry from custom C++, Rust, and Python applications.
+                                              </div>
+                          </details>
+                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
+                          <summary class="flex justify-between items-center cursor-pointer list-none">
+                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">How is my data secured?</span>
+                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
+                          </summary>
+                          <div class="pt-4 text-dust text-sm leading-relaxed">
+                                                  We are SOC 2 Type II compliant. All processing happens in-memory and is never persisted to disk unless explicitly requested. Data is encrypted in transit using TLS 1.3 and at rest using AES-256.
+                                              </div>
+                          </details>
+                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
+                          <summary class="flex justify-between items-center cursor-pointer list-none">
+                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">Can I export entropy heatmaps for reports?</span>
+                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
+                          </summary>
+                          <div class="pt-4 text-dust text-sm leading-relaxed">
+                                                  Yes. You can export any visualization as a high-resolution PNG or PDF. We also support HTML embedding for live dashboards and raw JSON export of the entropy scores for custom tooling.
+                                              </div>
+                          </details>
+                          </div>
+                          </div>
+                          </section>
+                          <!-- Final CTA -->
+                          <section class="py-section-v-mobile md:py-section-v-desktop relative overflow-hidden bg-void">
+                          <div class="absolute inset-0 z-0 flex items-center justify-center opacity-30 pointer-events-none">
+                          <div class="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-signal-cyan/20 via-transparent to-transparent scale-[2]"></div>
+                          </div>
+                          <div class="max-w-max-width mx-auto px-gutter relative z-10 text-center">
+                          <div class="inline-flex items-center gap-3 border border-signal-cyan px-6 py-2 mb-8">
+                          <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-cyan opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-signal-cyan"></span>
+                          </span>
+                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-widest uppercase">System Status: Ready</span>
+                          </div>
+                          <h2 class="font-display-hero text-3xl md:text-6xl text-on-background mb-10 max-w-4xl mx-auto uppercase">Ready to See What Others Miss?</h2>
+                          <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full md:w-auto px-10 py-4 bg-signal-cyan text-void font-label-caps font-bold text-base hover:opacity-90 transition-all active:scale-95 duration-150 entropy-glow uppercase text-center flex items-center justify-center">
+                                              START FREE SCAN
+                                          </a>
+                          </div>
+                          </div>
+                          </section>
+                          </main>
+                          <!-- Footer -->
+                          <footer class="bg-void border-t border-graphite w-full">
+                          <div class="max-w-max-width mx-auto px-gutter py-section-v-mobile md:py-section-v-desktop">
+                          <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                          <div class="col-span-1 md:col-span-1">
+                          <span class="font-display-hero text-signal-cyan text-xl block mb-6 uppercase">AETHER</span>
+                          <p class="text-dust font-body text-sm mb-8 max-w-xs">Entropy systems for the next intelligence layer. Processing reality at the edge of the void.</p>
+                          <div class="flex gap-4">
+                          <a class="w-8 h-8 border border-graphite flex items-center justify-center text-dust hover:text-signal-cyan transition-colors" href="#"><span class="material-symbols-outlined text-sm">terminal</span></a>
+                          <a class="w-8 h-8 border border-graphite flex items-center justify-center text-dust hover:text-signal-cyan transition-colors" href="#"><span class="material-symbols-outlined text-sm">share</span></a>
+                          </div>
+                          </div>
+                          <div>
+                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6">PRODUCT</h5>
+                          <ul class="space-y-3">
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Scanner</a></li>
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Heatmap</a></li>
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Ghost Protocol</a></li>
+                          </ul>
+                          </div>
+                          <div>
+                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6">RESOURCES</h5>
+                          <ul class="space-y-3">
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Documentation</a></li>
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">API Reference</a></li>
+                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Security</a></li>
+                          </ul>
+                          </div>
+                          <div>
+                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6 uppercase">SUBSCRIBE TO INTEL</h5>
+                          <p class="text-dust text-xs mb-4">Weekly Data X-Rays: Public datasets analyzed with entropy heatmaps.</p>
+                          <form class="flex flex-col gap-2">
+                          <input class="bg-graphite/30 border border-graphite p-3 text-xs text-on-surface focus:border-signal-cyan focus:ring-0 outline-none font-data-mono" placeholder="your@email.com" type="email"/>
+                          <button class="bg-signal-cyan text-void font-label-caps font-bold py-3 text-xs hover:opacity-90 uppercase">ENROLL</button>
+                          </form>
+                          </div>
+                          </div>
+                          </div>
+                          <div class="border-t border-graphite/30 py-8">
+                          <div class="max-w-max-width mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-4">
+                          <span class="font-label-caps text-[9px] text-dust tracking-widest uppercase">&copy; 2026 AETHER ENTROPY SYSTEMS. ALL RIGHTS RESERVED.</span>
+                          <div class="flex gap-6">
+                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">PRIVACY</a>
+                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">TERMS</a>
+                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">LEGAL</a>
+                          </div>
+                          </div>
+                          </div>
+                          </footer>
+                          </body></html>
