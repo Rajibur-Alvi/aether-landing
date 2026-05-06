@@ -1,614 +1,786 @@
-<!DOCTYPE html>
-  <html class="dark" lang="en"><head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
-  <style>
-          :root {
-              --void: #0D0D0D;
-            --surface: #0d1515;
-            --slate: #1A1A1B;
-            --on-surface: #dce4e4;
-                          --signal-cyan: #00F2FF;
-            --warning-ember: #FF4D00;
-              }
-        body {
-                          background-color: var(--surface);
-            color: var(--on-surface);
-            overflow-x: hidden;
-}
-        .material-symbols-outlined {
-                      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-        .signal-flow-bg {
-                      background-image: 
-                          linear-gradient(to right, #2A2A2C 1px, transparent 1px),
-                          linear-gradient(to bottom, #2A2A2C 1px, transparent 1px);
-            background-size: 40px 40px;
-}
-        .entropy-glow {
-                      box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-}
-        .pulse-glow-border {
-                      box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-}
-        .heatmap-grid {
-                      display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            gap: 2px;
-}
-        .heatmap-cell {
-                      aspect-ratio: 1;
-            background: rgba(0, 242, 255, 0.05);
-            border-radius: 1px;
-}
-        .heatmap-cell.hot { background: var(--warning-ember); box-shadow: 0 0 8px var(--warning-ember); }
-        .heatmap-cell.active { background: var(--signal-cyan); opacity: 0.8; }
 
-        @media (max-width: 768px) {
-            .heatmap-grid {
-                              grid-template-columns: repeat(10, 1fr);
-                grid-template-rows: repeat(20, 1fr);
-        }
+html_code = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aether — Entropy Intelligence Layer</title>
+<meta name="description" content="Aether turns raw data streams into living signal maps. Spot fraud, anomalies, and hidden patterns in seconds—not weeks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0D0D0D;color:#E8E8E8;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:#00F2FF;color:#0D0D0D}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{border:none;background:none;cursor:pointer;font-family:inherit}
+ul{list-style:none}
+
+:root{
+  --void:#0D0D0D;
+  --slate:#1A1A1B;
+  --graphite:#2A2A2C;
+  --signal-cyan:#00F2FF;
+  --warning-ember:#FF4D00;
+  --ghost-white:#E8E8E8;
+  --dust:#8A8A8A;
+  --pulse-glow:rgba(0,242,255,0.15);
+  --surface:#0d1515;
+  --surface-container:#192122;
 }
 
-        .pipeline-line {
-                      position: absolute;
-            top: 32px;
-            left: 12.5%;
-            right: 12.5%;
-            height: 1px;
-            background: linear-gradient(to right, transparent, var(--signal-cyan), transparent);
-            opacity: 0.3;
-            z-index: 0;
+.container{width:100%;max-width:1280px;margin:0 auto;padding:0 24px}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}
+.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.gap-8{gap:32px}
+.grid{display:grid}.grid-cols-1{grid-template-columns:repeat(1,1fr)}.grid-cols-2{grid-template-columns:repeat(2,1fr)}.grid-cols-3{grid-template-columns:repeat(3,1fr)}.grid-cols-4{grid-template-columns:repeat(4,1fr)}
+.text-center{text-align:center}
+.relative{position:relative}.absolute{position:absolute}.fixed{position:fixed}
+.inset-0{top:0;right:0;bottom:0;left:0}
+.w-full{width:100%}.h-full{height:100%}
+.hidden{display:none}.block{display:block}.inline-block{display:inline-block}.inline-flex{display:inline-flex}
+.overflow-hidden{overflow:hidden}
+.pointer-events-none{pointer-events:none}
+.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}
+
+.font-mono{font-family:'JetBrains Mono',monospace}
+.font-bold{font-weight:700}.font-semibold{font-weight:600}.font-medium{font-weight:500}
+.text-xs{font-size:11px}.text-sm{font-size:14px}.text-base{font-size:16px}.text-lg{font-size:18px}.text-xl{font-size:20px}.text-2xl{font-size:24px}.text-3xl{font-size:32px}.text-4xl{font-size:40px}.text-5xl{font-size:48px}.text-6xl{font-size:56px}
+.tracking-widest{letter-spacing:0.15em}.tracking-tighter{letter-spacing:-0.02em}
+.uppercase{text-transform:uppercase}
+.leading-tight{line-height:1.1}.leading-snug{line-height:1.3}
+
+.text-void{color:var(--void)}.text-slate{color:var(--slate)}.text-graphite{color:var(--graphite)}
+.text-signal{color:var(--signal-cyan)}.text-ember{color:var(--warning-ember)}.text-ghost{color:var(--ghost-white)}.text-dust{color:var(--dust)}
+.bg-void{background:var(--void)}.bg-slate{background:var(--slate)}.bg-graphite{background:var(--graphite)}
+.bg-signal{background:var(--signal-cyan)}.bg-surface{background:var(--surface)}.bg-surface-container{background:var(--surface-container)}
+.border-graphite{border-color:var(--graphite)}.border-signal{border-color:var(--signal-cyan)}
+
+.py-1{padding-top:4px;padding-bottom:4px}.py-2{padding-top:8px;padding-bottom:8px}.py-3{padding-top:12px;padding-bottom:12px}.py-4{padding-top:16px;padding-bottom:16px}.py-6{padding-top:24px;padding-bottom:24px}.py-8{padding-top:32px;padding-bottom:32px}.py-12{padding-top:48px;padding-bottom:48px}.py-16{padding-top:64px;padding-bottom:64px}.py-24{padding-top:96px;padding-bottom:96px}
+.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}.px-6{padding-left:24px;padding-right:24px}.px-8{padding-left:32px;padding-right:32px}
+.p-4{padding:16px}.p-6{padding:24px}.p-8{padding:32px}
+.mb-2{margin-bottom:8px}.mb-4{margin-bottom:16px}.mb-6{margin-bottom:24px}.mb-8{margin-bottom:32px}.mb-12{margin-bottom:48px}.mb-16{margin-bottom:64px}
+.mt-4{margin-top:16px}.mt-6{margin-top:24px}.mt-8{margin-top:32px}.mt-12{margin-top:48px}
+.mr-auto{margin-right:auto}.ml-auto{margin-left:auto}
+.mx-auto{margin-left:auto;margin-right:auto}
+
+.border{border-width:1px;border-style:solid}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}
+.rounded-full{border-radius:9999px}.rounded-lg{border-radius:8px}.rounded-xl{border-radius:12px}
+
+.backdrop-blur{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.opacity-20{opacity:0.2}.opacity-30{opacity:0.3}.opacity-40{opacity:0.4}.opacity-50{opacity:0.5}.opacity-60{opacity:0.6}.opacity-80{opacity:0.8}
+.grayscale{filter:grayscale(100%)}
+.transition-all{transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+.hover-lift:hover{transform:translateY(-4px)}
+.hover-glow:hover{box-shadow:0 0 30px var(--pulse-glow)}
+.hover-border-signal:hover{border-color:var(--signal-cyan)}
+.hover-text-signal:hover{color:var(--signal-cyan)}
+.active-scale:active{transform:scale(0.95)}
+
+.signal-flow{
+  background-image:linear-gradient(to right,var(--graphite) 1px,transparent 1px),linear-gradient(to bottom,var(--graphite) 1px,transparent 1px);
+  background-size:40px 40px;
 }
 
-        details summary::-webkit-details-marker {
-                      display: none;
+@keyframes scan{
+  0%{transform:translateY(-100vh)}
+  100%{transform:translateY(100vh)}
 }
-    </style>
-          <script id="tailwind-config">
-                  tailwind.config = {
-                      darkMode: "class",
-                      theme: {
-                extend: {
-                    "colors": {
-                        "dust": "#8A8A8A",
-                                                  "surface-container-high": "#232b2c",
-                                                  "inverse-surface": "#dce4e4",
-                                                  "error-container": "#93000a",
-                                                  "secondary-container": "#ff571a",
-                                                  "surface": "#0d1515",
-                                                  "on-error": "#690005",
-                                                  "surface-tint": "#00dbe7",
-                                                  "on-tertiary": "#3b2f00",
-                                                  "void": "#0D0D0D",
-                                                  "tertiary": "#fff6e4",
-                                                  "inverse-primary": "#00696f",
-                                                  "on-background": "#dce4e4",
-                                                  "surface-container-low": "#151d1e",
-                                                  "on-primary-container": "#006a71",
-                                                  "primary-fixed-dim": "#00dbe7",
-                                                  "ghost-white": "#E8E8E8",
-                                                  "surface-container-highest": "#2e3637",
-                                                  "outline": "#849495",
-                                                  "on-tertiary-container": "#725e00",
-                                                  "surface-container": "#192122",
-                                                  "warning-ember": "#FF4D00",
-                                                  "secondary-fixed-dim": "#ffb59e",
-                                                  "slate": "#1A1A1B",
-                                                  "inverse-on-surface": "#2a3232",
-                                                  "surface-bright": "#333b3b",
-                                                  "on-secondary-fixed-variant": "#852400",
-                                                  "secondary": "#ffb59e",
-                                                  "on-secondary": "#5e1700",
-                                                  "tertiary-fixed": "#ffe173",
-                                                  "pulse-glow": "rgba(0, 242, 255, 0.15)",
-                                                  "signal-cyan": "#00F2FF",
-                                                  "primary-container": "#00f2ff",
-                                                  "on-tertiary-fixed": "#221b00",
-                                                  "on-error-container": "#ffdad6",
+.scan-line{
+  position:absolute;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--signal-cyan),transparent);
+  opacity:0.3;animation:scan 8s linear infinite;pointer-events:none;
+}
 
-                          "on-tertiary-fixed": "#221b00",
-                          "on-error-container": "#ffdad6",
-                          "surface-container-lowest": "#080f10",
-                          "on-primary-fixed-variant": "#004f54",
-                          "secondary-fixed": "#ffdbd0",
-                          "outline-variant": "#3a494b",
-                          "on-secondary-container": "#521300",
-                          "on-secondary-fixed": "#3a0b00",
-                          "graphite": "#2A2A2C",
-                          "background": "#0d1515",
-                          "primary": "#e1fdff",
-                          "surface-dim": "#0d1515",
-                          "on-surface": "#dce4e4",
-                          "error": "#ffb4ab",
-                          "surface-variant": "#2e3637",
-                          "on-primary": "#00363a",
-                          "tertiary-fixed-dim": "#e8c423",
-                          "on-surface-variant": "#b9cacb",
-                          "primary-fixed": "#74f5ff",
-                          "on-primary-fixed": "#002022",
-                          "tertiary-container": "#fed83a",
-                          "on-tertiary-fixed-variant": "#554500"
-                          },
-                          "borderRadius": {
-"DEFAULT": "0.25rem",
-  "lg": "0.5rem",
-  "xl": "0.75rem",
-  "full": "9999px"
-  },
-  "spacing": {
-"section-v-desktop": "120px",
-  "base": "8px",
-  "section-v-mobile": "64px",
-  "max-width": "1280px",
-  "gutter": "24px",
-  "card-gap": "32px"
-  },
-  "fontFamily": {
-"h3-card": ["Inter"],
-  "data-mono": ["JetBrains Mono"],
-  "body": ["Inter"],
-  "label-caps": ["JetBrains Mono"],
-  "display-hero": ["Inter"],
-  "h2-section": ["Inter"]
-  },
-  "fontSize": {
-"h3-card": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
-  "data-mono": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
-  "body": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
-  "label-caps": ["11px", {"lineHeight": "1", "fontWeight": "500"}],
-                          "display-hero": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                      "h2-section": ["48px", {"lineHeight": "1.2", "fontWeight": "700"}]
-        }
-},
-},
+@keyframes pulse-dot{
+  0%,100%{opacity:1}
+  50%{opacity:0.3}
 }
-</script>
-  </head>
-  <body class="font-body text-body bg-surface">
-  <!-- TopAppBar -->
-  <header class="bg-void/80 backdrop-blur-md text-signal-cyan fixed top-0 w-full z-50 border-b border-graphite h-16 md:h-20">
-  <div class="flex justify-between items-center w-full px-gutter max-w-max-width mx-auto h-full">
-  <div class="flex items-center gap-2 md:gap-4">
-  <span class="material-symbols-outlined text-signal-cyan" style="font-variation-settings: 'FILL' 0;">hub</span>
-  <span class="font-display-hero text-signal-cyan tracking-tighter text-xl md:text-2xl uppercase">AETHER</span>
+.pulse{animation:pulse-dot 2s cubic-bezier(0.4,0,0.6,1) infinite}
+
+.heatmap-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:2px}
+.heatmap-cell{aspect-ratio:1;transition:all 0.3s ease}
+.heatmap-cell:hover{transform:scale(1.2);z-index:10}
+
+.hc-1{background:rgba(0,242,255,0.05)}
+.hc-2{background:rgba(0,242,255,0.1)}
+.hc-3{background:rgba(0,242,255,0.2)}
+.hc-4{background:rgba(0,242,255,0.3)}
+.hc-5{background:rgba(0,242,255,0.4)}
+.hc-6{background:rgba(0,242,255,0.5)}
+.hc-7{background:rgba(0,242,255,0.6)}
+.hc-8{background:rgba(0,242,255,0.7)}
+.hc-9{background:rgba(255,77,0,0.6)}
+.hc-10{background:rgba(255,77,0,0.9)}
+
+.pipeline-connector{
+  position:absolute;top:24px;left:12.5%;right:12.5%;height:2px;background:var(--graphite);
+}
+.pipeline-connector::before{
+  content:'';position:absolute;left:0;top:0;height:100%;width:100%;
+  background:linear-gradient(90deg,var(--signal-cyan) 0%,var(--signal-cyan) 25%,var(--graphite) 25%);
+}
+
+.pricing-featured{
+  border:2px solid var(--signal-cyan);
+  box-shadow:0 0 20px var(--pulse-glow);
+  transform:translateY(-8px);
+}
+
+.mobile-menu{
+  position:fixed;inset:0;background:var(--void);z-index:100;
+  padding:80px 24px 24px;transform:translateX(100%);transition:transform 0.3s ease;
+}
+.mobile-menu.open{transform:translateX(0)}
+
+@media(min-width:768px){
+  .md-flex{display:flex}
+  .md-grid{display:grid}
+  .md-hidden{display:none}
+  .md-grid-cols-2{grid-template-columns:repeat(2,1fr)}
+  .md-grid-cols-3{grid-template-columns:repeat(3,1fr)}
+  .md-grid-cols-4{grid-template-columns:repeat(4,1fr)}
+  .md-flex-row{flex-direction:row}
+  .md-text-5xl{font-size:48px}
+  .md-text-6xl{font-size:56px}
+  .md-text-7xl{font-size:72px}
+  .md-py-24{padding-top:96px;padding-bottom:96px}
+  .md-py-32{padding-top:128px;padding-bottom:128px}
+}
+
+@media(max-width:767px){
+  .heatmap-grid{grid-template-columns:repeat(10,1fr)}
+  .pipeline-connector{display:none}
+  .pricing-featured{transform:none}
+}
+
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--void)}
+::-webkit-scrollbar-thumb{background:var(--graphite);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--dust)}
+</style>
+</head>
+
+<body>
+
+<!-- MOBILE MENU -->
+<div id="mobileMenu" class="mobile-menu">
+  <button onclick="toggleMenu()" class="absolute top-6 right-6 text-ghost text-2xl">&#10005;</button>
+  <div class="flex flex-col gap-6 mt-8">
+    <a href="#product" onclick="toggleMenu()" class="font-mono text-sm uppercase tracking-widest text-ghost hover-text-signal transition-all">Product</a>
+    <a href="#pricing" onclick="toggleMenu()" class="font-mono text-sm uppercase tracking-widest text-ghost hover-text-signal transition-all">Pricing</a>
+    <a href="#docs" onclick="toggleMenu()" class="font-mono text-sm uppercase tracking-widest text-ghost hover-text-signal transition-all">Docs</a>
+    <a href="https://forms.google.com" target="_blank" class="inline-flex items-center justify-center px-6 py-3 bg-signal text-void font-mono text-xs uppercase tracking-widest font-bold active-scale transition-all mt-4">Start Free &#8594;</a>
   </div>
-  <nav class="hidden md:flex items-center gap-8">
-  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#">PRODUCT</a>
-  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#pricing">PRICING</a>
-  <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-signal-cyan transition-colors duration-300" href="#">DOCS</a>
-  </nav>
-  <div class="flex items-center gap-4">
-  <button class="font-label-caps text-[10px] md:text-label-caps text-signal-cyan hover:underline transition-all">ACCESS TERMINAL</button>
-  <button class="md:hidden text-signal-cyan"><span class="material-symbols-outlined">menu</span></button>
-  </div>
-  </div>
-  </header>
-  <main class="relative pt-16 md:pt-20 overflow-hidden">
-  <!-- Background Signal Flow Grid -->
-  <div class="absolute inset-0 signal-flow-bg opacity-10 pointer-events-none -z-10"></div>
-  <!-- Hero Section -->
-  <section class="pt-section-v-mobile md:pt-section-v-desktop pb-16 text-center px-gutter bg-void">
-  <h1 class="font-display-hero text-3xl md:text-display-hero text-on-background mb-6 leading-tight max-w-4xl mx-auto uppercase">See the Chaos Before It Costs You</h1>
-<p class="text-dust max-w-2xl mx-auto mb-10 text-base md:text-lg">Aether turns raw data streams into living signal maps. Spot fraud, anomalies, and hidden patterns in seconds-not weeks. <span class="text-signal-cyan">Built for quant traders, security teams, and data engineers.</span></p>
-<div class="flex flex-col md:flex-row items-center justify-center gap-4 mb-16">
-  <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full md:w-auto px-8 py-4 bg-signal-cyan text-void font-label-caps font-bold hover:opacity-90 transition-all active:scale-95 duration-150 entropy-glow text-center flex items-center justify-center">
-                  START FREE SCAN
-              </a>
-  <a href="https://www.loom.com/share/placeholder" target="_blank" class="w-full md:w-auto px-8 py-4 border border-graphite text-on-surface font-label-caps font-bold hover:bg-slate transition-all active:scale-95 duration-150 flex items-center justify-center gap-2">
-  <span class="material-symbols-outlined text-lg">play_circle</span>
-                  WATCH THE X-RAY (60s)
-              </a>
-  </div>
-  <!-- Trust Bar -->
-  <div class="mb-16 border-t border-graphite/30 pt-12">
-  <p class="font-label-caps text-[10px] tracking-[0.3em] text-dust mb-8 uppercase">Built for teams at</p>
-<div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale contrast-125">
-<span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">BLOOMBERG</span>
-<span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">CITADEL</span>
-  <span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">PALANTIR</span>
-  <span class="font-display-hero text-lg md:text-xl text-on-surface tracking-tighter">JANE STREET</span>
-  </div>
-  </div>
-  <!-- Trust Badges / Stats Bar -->
-  <div class="flex flex-col md:flex-row justify-center items-stretch md:items-center opacity-60 max-w-3xl mx-auto">
-  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
-  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">ISO-27001</span>
-  <span class="text-[8px] text-dust uppercase font-data-mono">Certified</span>
-  </div>
-  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
-  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">SOC2 TYPE II</span>
-  <span class="text-[8px] text-dust uppercase font-data-mono">Compliant</span>
-  </div>
-  <div class="py-4 md:px-8 border-b md:border-b-0 md:border-r border-graphite">
-  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">GDPR</span>
-  <span class="text-[8px] text-dust uppercase font-data-mono">Data Ready</span>
-  </div>
-  <div class="py-4 md:px-8">
-  <span class="font-label-caps text-[10px] tracking-[0.2em] block mb-1">HIPAA</span>
-  <span class="text-[8px] text-dust uppercase font-data-mono">Standard</span>
-  </div>
-  </div>
-  </section>
-  <!-- How It Works: Pipeline Section -->
-  <section class="py-section-v-mobile md:py-section-v-desktop bg-surface border-y border-graphite">
-  <div class="max-w-max-width mx-auto px-gutter">
-  <div class="text-center mb-16">
-  <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.4em] mb-4 block">PIPELINE ARCHITECTURE</span>
-  <h2 class="font-h2-section text-2xl md:text-h2-section text-on-background mb-4">How It Works</h2>
 </div>
-<div class="relative grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
-<div class="hidden md:block pipeline-line"></div>
-<!-- Step 1 -->
-  <div class="pipeline-node text-center group relative z-10">
-  <div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-  <span class="material-symbols-outlined text-signal-cyan text-3xl">sensors</span>
+
+<!-- NAVIGATION -->
+<header class="fixed top-0 w-full z-50 bg-void/80 backdrop-blur border-b border-graphite" style="height:80px">
+  <div class="container flex justify-between items-center h-full">
+    <a href="#" class="flex items-center gap-3">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-7.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/>
+      </svg>
+      <span class="font-mono text-xl font-bold text-signal tracking-tighter">AETHER</span>
+    </a>
+    
+    <nav class="hidden md-flex items-center gap-8">
+      <a href="#product" class="font-mono text-xs uppercase tracking-widest text-dust hover-text-signal transition-all">Product</a>
+      <a href="#pricing" class="font-mono text-xs uppercase tracking-widest text-dust hover-text-signal transition-all">Pricing</a>
+      <a href="#docs" class="font-mono text-xs uppercase tracking-widest text-dust hover-text-signal transition-all">Docs</a>
+    </nav>
+    
+    <div class="flex items-center gap-4">
+      <a href="https://forms.google.com" target="_blank" class="hidden md-flex items-center px-6 py-3 bg-signal text-void font-mono text-xs uppercase tracking-widest font-bold active-scale transition-all hover-glow">
+        Start Free &#8594;
+      </a>
+      <button onclick="toggleMenu()" class="md-hidden text-ghost p-2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
   </div>
-  <h4 class="font-label-caps text-signal-cyan mb-2">01. INGEST</h4>
-  <p class="text-dust text-xs md:text-sm px-4">Raw telemetry stream capture across all endpoints.</p>
-</div>
-<!-- Step 2 -->
-  <div class="pipeline-node text-center group relative z-10">
-  <div class="w-16 h-16 bg-slate border border-signal-cyan rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform pulse-glow-border">
-  <span class="material-symbols-outlined text-signal-cyan text-3xl">calculate</span>
+</header>
+
+<main style="padding-top:80px">
+
+<!-- HERO SECTION -->
+<section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden py-16 md-py-32">
+  <div class="absolute inset-0 signal-flow opacity-20 pointer-events-none"></div>
+  <div class="scan-line"></div>
+  <div class="absolute inset-0" style="background:linear-gradient(to bottom,transparent,rgba(13,13,13,0.5),var(--void));pointer-events:none"></div>
+  
+  <div class="container relative z-10 text-center">
+    <!-- Badge -->
+    <div class="inline-flex items-center gap-2 px-4 py-2 border border-graphite bg-slate mb-8">
+      <span class="w-2 h-2 rounded-full bg-signal pulse"></span>
+      <span class="font-mono text-xs uppercase tracking-widest text-signal">Entropy Visualization Engine</span>
+    </div>
+    
+    <!-- Headline -->
+    <h1 class="text-4xl md-text-7xl font-bold text-ghost leading-tight mb-6 max-w-4xl mx-auto">
+      See the Chaos<br>Before It Costs You
+    </h1>
+    
+    <!-- Subheadline -->
+    <p class="text-base md-text-lg text-dust max-w-2xl mx-auto mb-6">
+      Aether turns raw data streams into living signal maps. Spot fraud, anomalies, and hidden patterns in seconds&#8212;not weeks.
+    </p>
+    <p class="text-sm text-signal mb-12">Built for quant traders, security teams, and data engineers.</p>
+    
+    <!-- CTAs -->
+    <div class="flex flex-col md-flex-row items-center justify-center gap-4 mb-16">
+      <a href="https://forms.google.com" target="_blank" class="inline-flex items-center px-8 py-4 bg-signal text-void font-mono text-sm uppercase tracking-widest font-bold active-scale transition-all hover-glow">
+        Start Free Scan &#8594;
+      </a>
+      <a href="https://loom.com" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 border border-graphite text-ghost font-mono text-sm uppercase tracking-widest font-bold hover-border-signal hover-text-signal transition-all active-scale">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        Watch the X-Ray (60s)
+      </a>
+    </div>
+    
+    <!-- Trust Bar -->
+    <div class="flex flex-wrap justify-center items-center gap-6 md-gap-10 opacity-40 mb-16">
+      <span class="font-mono text-xs uppercase tracking-widest text-dust">Built for teams at</span>
+      <span class="font-mono text-sm font-bold text-ghost">BLOOMBERG</span>
+      <span class="font-mono text-sm font-bold text-ghost">CITADEL</span>
+      <span class="font-mono text-sm font-bold text-ghost">PALANTIR</span>
+      <span class="font-mono text-sm font-bold text-ghost">JANE STREET</span>
+    </div>
   </div>
-  <h4 class="font-label-caps text-signal-cyan mb-2">02. CALCULATE</h4>
-  <h5 class="text-on-surface font-semibold text-sm mb-2 uppercase tracking-wide">Entropy Engine</h5>
-  <p class="text-dust text-xs md:text-sm px-4">Shannon entropy scored at byte-level in milliseconds.</p>
-</div>
-<!-- Step 3 -->
-<div class="pipeline-node text-center group relative z-10">
-<div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-signal-cyan text-3xl">rebase_edit</span>
-</div>
-  <h4 class="font-label-caps text-signal-cyan mb-2">03. CORRELATE</h4>
-  <p class="text-dust text-xs md:text-sm px-4">Cross-referencing event signals across the global mesh.</p>
-</div>
-<!-- Step 4 -->
-  <div class="pipeline-node text-center group relative z-10">
-  <div class="w-16 h-16 bg-slate border border-signal-cyan/50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-  <span class="material-symbols-outlined text-signal-cyan text-3xl">terminal</span>
+  
+  <!-- Live Stats Bar -->
+  <div class="absolute bottom-0 w-full border-t border-graphite bg-void/80 backdrop-blur py-6">
+    <div class="container grid grid-cols-1 md-grid-cols-3 gap-6 text-center">
+      <div>
+        <div class="font-mono text-2xl text-signal">84.2<span class="text-sm text-dust">/100</span></div>
+        <div class="font-mono text-xs uppercase tracking-widest text-dust mt-1">Avg Entropy Score</div>
+      </div>
+      <div>
+        <div class="font-mono text-2xl text-ember">1,247</div>
+        <div class="font-mono text-xs uppercase tracking-widest text-dust mt-1">Anomalies Today</div>
+      </div>
+      <div>
+        <div class="font-mono text-2xl text-ghost">2.4 <span class="text-signal">TB</span></div>
+        <div class="font-mono text-xs uppercase tracking-widest text-dust mt-1">Data Processed</div>
+      </div>
+    </div>
   </div>
-  <h4 class="font-label-caps text-signal-cyan mb-2">04. RESOLVE</h4>
-  <p class="text-dust text-xs md:text-sm px-4">Instant terminal deployment of corrective protocols.</p>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="product" class="py-16 md-py-32 bg-void relative">
+  <div class="container">
+    <div class="text-center mb-16">
+      <span class="font-mono text-xs uppercase tracking-widest text-signal mb-4 block">Pipeline Architecture</span>
+      <h2 class="text-3xl md-text-5xl font-bold text-ghost">How It Works</h2>
+    </div>
+    
+    <div class="relative grid grid-cols-1 md-grid-cols-4 gap-8">
+      <div class="pipeline-connector hidden md-block"></div>
+      
+      <div class="text-center relative z-10">
+        <div class="w-16 h-16 mx-auto bg-slate border border-signal rounded-full flex items-center justify-center mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-2">01. Ingest</div>
+        <h3 class="text-lg font-semibold text-ghost mb-2">Drop Your Data</h3>
+        <p class="text-sm text-dust">CSV, JSON, binary, or live stream. No preprocessing required.</p>
+      </div>
+      
+      <div class="text-center relative z-10">
+        <div class="w-16 h-16 mx-auto bg-slate border border-signal rounded-full flex items-center justify-center mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-2">02. Calculate</div>
+        <h3 class="text-lg font-semibold text-ghost mb-2">Entropy Engine</h3>
+        <p class="text-sm text-dust">Shannon entropy scored at byte-level in milliseconds.</p>
+      </div>
+      
+      <div class="text-center relative z-10">
+        <div class="w-16 h-16 mx-auto bg-slate border border-signal rounded-full flex items-center justify-center mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-2">03. Correlate</div>
+        <h3 class="text-lg font-semibold text-ghost mb-2">Pattern Match</h3>
+        <p class="text-sm text-dust">Cross-reference signals against global anomaly databases.</p>
+      </div>
+      
+      <div class="text-center relative z-10">
+        <div class="w-16 h-16 mx-auto bg-slate border border-signal rounded-full flex items-center justify-center mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-2">04. Resolve</div>
+        <h3 class="text-lg font-semibold text-ghost mb-2">Take Action</h3>
+        <p class="text-sm text-dust">Export, alert, or automate. Your signal, your action.</p>
+      </div>
+    </div>
   </div>
+</section>
+
+<!-- LIVE DASHBOARD PREVIEW -->
+<section class="py-16 md-py-32 bg-surface relative overflow-hidden">
+  <div class="container">
+    <div class="text-center mb-16">
+      <div class="inline-flex items-center gap-2 px-4 py-2 border border-graphite bg-slate mb-6">
+        <span class="w-2 h-2 rounded-full bg-signal pulse"></span>
+        <span class="font-mono text-xs uppercase tracking-widest text-signal">Live System Feed</span>
+      </div>
+      <h2 class="text-3xl md-text-5xl font-bold text-ghost mb-4">Unified Intelligence Surface</h2>
+      <p class="text-base text-dust max-w-2xl mx-auto">Monitor high-entropy data streams in real-time. Our analytical engine processes 1.2M signals per second with zero-latency visual feedback.</p>
+    </div>
+    
+    <div class="max-w-5xl mx-auto rounded-xl border border-graphite bg-slate shadow-2xl overflow-hidden">
+      <div class="flex items-center gap-2 px-4 py-3 bg-graphite/50 border-b border-graphite">
+        <div class="flex gap-2">
+          <div class="w-3 h-3 rounded-full" style="background:#FF5F56"></div>
+          <div class="w-3 h-3 rounded-full" style="background:#FFBD2E"></div>
+          <div class="w-3 h-3 rounded-full" style="background:#27C93F"></div>
+        </div>
+        <div class="ml-4 px-4 py-1 bg-void rounded font-mono text-xs text-dust">aether.io/dashboard/live</div>
+      </div>
+      
+      <div class="aspect-video bg-void p-4 md-p-6 grid grid-cols-1 md-grid-cols-4 gap-4 relative">
+        <div class="hidden md-block bg-slate border border-graphite p-4">
+          <div class="font-mono text-xs uppercase tracking-widest text-signal mb-4">Data Sources</div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-sm text-ghost">
+              <span class="w-2 h-2 rounded-full bg-signal"></span>Market Feed
+            </div>
+            <div class="flex items-center gap-2 text-sm text-ghost">
+              <span class="w-2 h-2 rounded-full bg-signal"></span>Server Logs
+            </div>
+            <div class="flex items-center gap-2 text-sm text-ember">
+              <span class="w-2 h-2 rounded-full bg-ember pulse"></span>Transactions &#9888;
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-graphite">
+            <div class="font-mono text-xs text-dust mb-2">Entropy Score</div>
+            <div class="font-mono text-2xl text-ember">87.3%</div>
+            <div class="w-full h-1 bg-graphite mt-2">
+              <div class="h-full bg-ember" style="width:87%"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="md-col-span-3 bg-slate border border-graphite p-4 relative">
+          <div class="flex justify-between mb-4">
+            <span class="font-mono text-xs uppercase tracking-widest text-dust">Entropy Heatmap</span>
+            <span class="font-mono text-xs uppercase tracking-widest text-ember flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-ember pulse"></span>Live
+            </span>
+          </div>
+          <div class="heatmap-grid" id="heatmap"></div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 md-grid-cols-4 gap-px border-t border-graphite">
+        <div class="bg-slate p-4 border-r border-graphite">
+          <div class="font-mono text-xs text-dust mb-1">Active Feed</div>
+          <div class="font-mono text-lg text-signal">Market</div>
+        </div>
+        <div class="bg-slate p-4 border-r border-graphite">
+          <div class="font-mono text-xs text-dust mb-1">Signal Loss</div>
+          <div class="font-mono text-lg text-ghost">0.02%</div>
+        </div>
+        <div class="bg-slate p-4 border-r border-graphite">
+          <div class="font-mono text-xs text-dust mb-1">Throughput</div>
+          <div class="font-mono text-lg text-ghost">1.48 <span class="text-signal">TB/s</span></div>
+        </div>
+        <div class="bg-slate p-4" style="box-shadow:inset 0 0 20px rgba(255,77,0,0.1)">
+          <div class="font-mono text-xs text-ember mb-1">Anomalies</div>
+          <div class="font-mono text-lg text-ember">1,247</div>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="py-16 md-py-32 bg-void">
+  <div class="container">
+    <div class="text-center mb-16">
+      <span class="font-mono text-xs uppercase tracking-widest text-signal mb-4 block">Differentiation Protocols</span>
+      <h2 class="text-3xl md-text-5xl font-bold text-ghost">The Aether Edge</h2>
+    </div>
+    
+    <div class="border border-graphite overflow-hidden rounded-lg">
+      <div class="grid grid-cols-4 bg-slate border-b border-graphite">
+        <div class="p-4 font-mono text-xs uppercase tracking-widest text-dust">Feature</div>
+        <div class="p-4 font-mono text-xs uppercase tracking-widest text-dust text-center">Excel</div>
+        <div class="p-4 font-mono text-xs uppercase tracking-widest text-dust text-center">Python</div>
+        <div class="p-4 font-mono text-xs uppercase tracking-widest text-signal text-center" style="background:rgba(0,242,255,0.05)">Aether</div>
+      </div>
+      
+      <div class="grid grid-cols-4 border-b border-graphite/50">
+        <div class="p-4 text-sm text-ghost">Entropy Visualization</div>
+        <div class="p-4 text-center text-dust">&#10005;</div>
+        <div class="p-4 text-center text-dust">Hours of code</div>
+        <div class="p-4 text-center text-signal font-bold font-mono text-sm">Instant</div>
+      </div>
+      
+      <div class="grid grid-cols-4 border-b border-graphite/50">
+        <div class="p-4 text-sm text-ghost">Real-time Anomaly Detection</div>
+        <div class="p-4 text-center text-dust">&#10005;</div>
+        <div class="p-4 text-center text-dust">Complex setup</div>
+        <div class="p-4 text-center text-signal font-bold font-mono text-sm">Native</div>
+      </div>
+      
+      <div class="grid grid-cols-4 border-b border-graphite/50">
+        <div class="p-4 text-sm text-ghost">Time to First Anomaly</div>
+        <div class="p-4 text-center text-dust">Days</div>
+        <div class="p-4 text-center text-dust">4-6 hours</div>
+        <div class="p-4 text-center text-signal font-bold font-mono text-sm">&lt;8 SEC</div>
+      </div>
+      
+      <div class="grid grid-cols-4">
+        <div class="p-4 text-sm text-ghost">Zero Setup Required</div>
+        <div class="p-4 text-center text-dust">&#10005;</div>
+        <div class="p-4 text-center text-dust">&#10005;</div>
+        <div class="p-4 text-center text-signal font-bold font-mono text-sm">&#10003;</div>
+      </div>
+    </div>
   </div>
-  </section>
-  <!-- Entropy Heatmap Mockup (Dashboard Area) -->
-  <section class="py-section-v-mobile md:py-section-v-desktop bg-void relative">
-  <div class="max-w-max-width mx-auto px-gutter">
-  <div class="flex flex-col lg:flex-row gap-0 border border-graphite bg-surface-container-lowest overflow-hidden shadow-2xl">
-  <!-- Sidebar -->
-  <div class="w-full lg:w-64 bg-slate border-b lg:border-b-0 lg:border-r border-graphite p-6">
-  <div class="flex items-center gap-2 mb-8">
-  <div class="w-2 h-2 rounded-full bg-signal-cyan animate-pulse"></div>
-  <span class="font-label-caps text-[10px] text-on-surface-variant tracking-widest">LIVE SOURCES</span>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="py-16 md-py-32 bg-surface border-y border-graphite">
+  <div class="container">
+    <div class="text-center mb-16">
+      <span class="font-mono text-xs uppercase tracking-widest text-signal mb-4 block">Subscription Protocols</span>
+      <h2 class="text-3xl md-text-5xl font-bold text-ghost mb-4">Choose Your Vector</h2>
+      <p class="text-base text-dust max-w-2xl mx-auto">Select the monitoring tier that aligns with your operational complexity. All plans feature low-latency data stream integration.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md-grid-cols-3 gap-8 items-start">
+      <!-- Explorer -->
+      <div class="bg-slate border border-graphite p-8 hover-lift hover-border-signal transition-all">
+        <div class="mb-8">
+          <span class="font-mono text-xs uppercase tracking-widest text-dust block mb-2">Entry Level</span>
+          <h3 class="text-2xl font-semibold text-ghost mb-2">Explorer</h3>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-bold text-signal font-mono">$0</span>
+            <span class="font-mono text-xs uppercase tracking-widest text-dust">/mo</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            3 Active Stream Channels
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Basic Anomaly Detection
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            24h History Buffer
+          </li>
+        </ul>
+        <a href="https://forms.google.com" target="_blank" class="block w-full py-4 border border-graphite text-signal font-mono text-xs uppercase tracking-widest font-bold text-center hover-bg-signal hover-text-void transition-all active-scale">
+          Start Free &#8594;
+        </a>
+      </div>
+      
+      <!-- Signal Pro -->
+      <div class="bg-slate p-8 pricing-featured hover-lift transition-all relative">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-signal text-void font-mono text-xs uppercase tracking-widest font-bold py-1 px-4">
+          Most Popular
+        </div>
+        <div class="mb-8">
+          <span class="font-mono text-xs uppercase tracking-widest text-signal block mb-2">Professional</span>
+          <h3 class="text-2xl font-semibold text-ghost mb-2">Signal Pro</h3>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-bold text-signal font-mono">$99</span>
+            <span class="font-mono text-xs uppercase tracking-widest text-dust">/mo</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Unlimited Stream Channels
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Neural Anomaly Synthesis
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            30-Day Predictive Archiving
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            API Access (10k req/min)
+          </li>
+        </ul>
+        <a href="https://forms.google.com" target="_blank" class="block w-full py-4 bg-signal text-void font-mono text-xs uppercase tracking-widest font-bold text-center hover-opacity-90 transition-all active-scale">
+          Start 14-Day Trial &#8594;
+        </a>
+      </div>
+      
+      <!-- Aether Core -->
+      <div class="bg-slate border border-graphite p-8 hover-lift hover-border-signal transition-all">
+        <div class="mb-8">
+          <span class="font-mono text-xs uppercase tracking-widest text-dust block mb-2">Organization</span>
+          <h3 class="text-2xl font-semibold text-ghost mb-2">Aether Core</h3>
+          <div class="flex items-baseline gap-2">
+            <span class="text-4xl font-bold text-signal font-mono">Custom</span>
+          </div>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            On-premise Deployment
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Custom Entropy Modeling
+          </li>
+          <li class="flex items-center gap-3 text-sm text-dust">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            Dedicated Support SLA
+          </li>
+        </ul>
+        <a href="https://forms.google.com" target="_blank" class="block w-full py-4 border border-graphite text-signal font-mono text-xs uppercase tracking-widest font-bold text-center hover-bg-signal hover-text-void transition-all active-scale">
+          Request Demo &#8594;
+        </a>
+      </div>
+    </div>
   </div>
-  <div class="space-y-4">
-  <div class="flex items-center justify-between group cursor-default">
-  <span class="text-xs text-on-surface font-data-mono">Market Feed</span>
-  <span class="material-symbols-outlined text-signal-cyan text-sm">bar_chart</span>
+</section>
+
+<!-- FAQ -->
+<section class="py-16 md-py-32 bg-void border-b border-graphite">
+  <div class="container">
+    <div class="text-center mb-16">
+      <span class="font-mono text-xs uppercase tracking-widest text-signal mb-4 block">Signal Clarity</span>
+      <h2 class="text-3xl md-text-5xl font-bold text-ghost">Common Questions</h2>
+    </div>
+    
+    <div class="max-w-2xl mx-auto space-y-4">
+      <details class="bg-slate border border-graphite p-6 group">
+        <summary class="text-lg font-semibold text-ghost cursor-pointer list-none flex justify-between items-center">
+          What file formats does Aether support?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" class="transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <p class="text-sm text-dust mt-4">CSV, JSON, Parquet, and raw binary. Live streams via WebSocket and REST API. Drop a file or paste a URL&#8212;no preprocessing required.</p>
+      </details>
+      
+      <details class="bg-slate border border-graphite p-6 group">
+        <summary class="text-lg font-semibold text-ghost cursor-pointer list-none flex justify-between items-center">
+          Is my data secure?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" class="transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <p class="text-sm text-dust mt-4">All processing happens in-memory. We don't persist your raw data. SOC 2 Type II certified. AES-256 encryption in transit and at rest.</p>
+      </details>
+      
+      <details class="bg-slate border border-graphite p-6 group">
+        <summary class="text-lg font-semibold text-ghost cursor-pointer list-none flex justify-between items-center">
+          Can I export the entropy heatmap?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" class="transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <p class="text-sm text-dust mt-4">Yes. PNG, PDF, and interactive HTML exports. Pro and Enterprise tiers include API access for programmatic export.</p>
+      </details>
+      
+      <details class="bg-slate border border-graphite p-6 group">
+        <summary class="text-lg font-semibold text-ghost cursor-pointer list-none flex justify-between items-center">
+          Do I need to know how to code?
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" class="transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <p class="text-sm text-dust mt-4">No. Aether is built for analysts, traders, and security teams&#8212;not just developers. Drag, drop, and see signals instantly.</p>
+      </details>
+    </div>
   </div>
-  <div class="flex items-center justify-between group cursor-default">
-  <span class="text-xs text-on-surface font-data-mono">Server Logs</span>
-  <span class="material-symbols-outlined text-dust text-sm">terminal</span>
+</section>
+
+<!-- FINAL CTA -->
+<section class="py-16 md-py-32 bg-void relative overflow-hidden">
+  <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+    <div class="w-full h-full" style="background:radial-gradient(circle at center,rgba(0,242,255,0.15),transparent 70%)"></div>
   </div>
-  <div class="flex items-center justify-between group cursor-default">
-  <span class="text-xs text-on-surface font-data-mono">Transactions</span>
-  <span class="material-symbols-outlined text-warning-ember text-sm">currency_exchange</span>
+  
+  <div class="container relative z-10 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-2 border border-signal mb-8">
+      <span class="w-2 h-2 rounded-full bg-signal pulse"></span>
+      <span class="font-mono text-xs uppercase tracking-widest text-signal">System Status: Ready</span>
+    </div>
+    
+    <h2 class="text-3xl md-text-6xl font-bold text-ghost mb-8 max-w-4xl mx-auto">Ready to See What Others Miss?</h2>
+    
+    <div class="flex flex-col md-flex-row items-center justify-center gap-4 mb-8">
+      <a href="https://forms.google.com" target="_blank" class="inline-flex items-center px-10 py-5 bg-signal text-void font-mono text-sm uppercase tracking-widest font-bold active-scale transition-all hover-glow">
+        Start Free Scan &#8594;
+      </a>
+      <a href="https://loom.com" target="_blank" class="inline-flex items-center px-10 py-5 border border-graphite text-ghost font-mono text-sm uppercase tracking-widest font-bold hover-border-signal hover-text-signal transition-all active-scale">
+        Request Docs
+      </a>
+    </div>
+    
+    <p class="font-mono text-sm text-dust">No authentication required for initial probe.</p>
   </div>
-  <div class="pt-8 mt-8 border-t border-graphite/50">
-  <div class="text-[9px] text-dust uppercase mb-2">Active Entropy</div>
-  <div class="text-xl font-data-mono text-signal-cyan">1.42 bit/B</div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-void border-t border-graphite">
+  <div class="container py-16 md-py-24">
+    <div class="grid grid-cols-2 md-grid-cols-5 gap-8">
+      <!-- Brand -->
+      <div class="col-span-2">
+        <div class="flex items-center gap-3 mb-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00F2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-7.07l-2.83 2.83M9.76 14.24l-2.83 2.83m11.14 0l-2.83-2.83M9.76 9.76L6.93 6.93"/>
+          </svg>
+          <span class="font-mono text-xl font-bold text-signal tracking-tighter">AETHER</span>
+        </div>
+        <p class="text-sm text-dust mb-6 max-w-xs">Entropy intelligence for the Age of Clarity. Processing reality at the edge of the void.</p>
+        
+        <div>
+          <div class="font-mono text-xs uppercase tracking-widest text-signal mb-3">Subscribe to Intel</div>
+          <p class="text-xs text-dust mb-3">Weekly Data X-Rays: Public datasets analyzed with entropy heatmaps.</p>
+          <form onsubmit="handleSubscribe(event)" class="flex gap-2">
+            <input type="email" placeholder="your@email.com" required
+                   class="flex-1 bg-slate border border-graphite px-4 py-3 text-sm text-ghost placeholder-dust focus-border-signal focus-outline-none transition-all" style="outline:none">
+            <button type="submit" class="px-4 py-3 bg-signal text-void font-mono text-xs uppercase tracking-widest font-bold active-scale transition-all">
+              Submit
+            </button>
+          </form>
+          <p id="formMessage" class="text-xs text-signal mt-2 hidden">Thanks. First X-Ray incoming.</p>
+        </div>
+      </div>
+      
+      <!-- Product -->
+      <div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-6">Product</div>
+        <ul class="space-y-3">
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">The Scanner</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">The Heatmap</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">The Ghost</a></li>
+          <li><a href="#pricing" class="text-sm text-dust hover-text-signal transition-all">Pricing</a></li>
+        </ul>
+      </div>
+      
+      <!-- Resources -->
+      <div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-6">Resources</div>
+        <ul class="space-y-3">
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Documentation</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">API Reference</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Security Protocol</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Status</a></li>
+        </ul>
+      </div>
+      
+      <!-- Legal -->
+      <div>
+        <div class="font-mono text-xs uppercase tracking-widest text-signal mb-6">Legal</div>
+        <ul class="space-y-3">
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Privacy</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Terms</a></li>
+          <li><a href="#" class="text-sm text-dust hover-text-signal transition-all">Security</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
+  
+  <div class="border-t border-graphite/50">
+    <div class="container py-6 flex flex-col md-flex-row justify-between items-center gap-4">
+      <p class="font-mono text-xs text-dust tracking-widest">&#169; 2026 AETHER INTELLIGENCE, INC. ALL RIGHTS RESERVED.</p>
+      <div class="flex gap-6">
+        <span class="font-mono text-xs text-graphite">Encryption: AES-256</span>
+        <span class="font-mono text-xs text-graphite">Status: Secure</span>
+      </div>
+    </div>
   </div>
-  </div>
-  <!-- Heatmap Area -->
-  <div class="flex-grow p-4 md:p-8">
-  <div class="flex items-center justify-between mb-6">
-  <h3 class="font-label-caps text-xs text-signal-cyan">AETHER_XRAY_VIEW_001</h3>
-  <div class="flex gap-2">
-  <span class="text-[9px] font-data-mono text-dust">RES: 20x10_GRID</span>
-  </div>
-  </div>
-  <div class="heatmap-grid mb-8">
-  <!-- Cells generated via simulation for visual fidelity -->
-  <div class="heatmap-cell"></div><div class="heatmap-cell active"></div><div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell hot"></div>
-  <div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell"></div><div class="heatmap-cell active"></div><div class="heatmap-cell"></div>
-  <script>
-                              document.addEventListener('DOMContentLoaded', () => {
-                                  const grid = document.querySelector('.heatmap-grid');
-                                const totalCells = 200;
-                                const currentCells = grid.children.length;
-                                for(let i=0; i < totalCells - currentCells; i++) {
-                                    const cell = document.createElement('div');
-                                    cell.className = 'heatmap-cell';
-                                    if(Math.random() > 0.95) cell.classList.add('hot');
-                                    else if(Math.random() > 0.8) cell.classList.add('active');
-                                    grid.appendChild(cell);
-                                }
+</footer>
+
+<script>
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+
+function generateHeatmap(){
+  const grid=document.getElementById('heatmap');
+  if(!grid)return;
+  const cells=200;
+  const classes=['hc-1','hc-1','hc-2','hc-2','hc-3','hc-3','hc-4','hc-5','hc-6','hc-7','hc-8','hc-9','hc-10'];
+  const weights=[8,8,6,6,5,5,4,3,2,2,1,1,1];
+  let html='';
+  for(let i=0;i<cells;i++){
+    const rand=Math.random();
+    let cumulative=0,cls='hc-1';
+    const total=weights.reduce((a,b)=>a+b,0);
+    for(let j=0;j<classes.length;j++){
+      cumulative+=weights[j]/total;
+      if(rand<cumulative){cls=classes[j];break;}
+    }
+    html+='<div class="heatmap-cell '+cls+'"></div>';
+  }
+  grid.innerHTML=html;
+}
+
+function animateHeatmap(){
+  const cells=document.querySelectorAll('.heatmap-cell');
+  if(!cells.length)return;
+  setInterval(()=>{
+    const idx=Math.floor(Math.random()*cells.length);
+    const cell=cells[idx];
+    const classes=['hc-1','hc-2','hc-3','hc-4','hc-5','hc-6','hc-7','hc-8','hc-9','hc-10'];
+    const newCls=classes[Math.floor(Math.random()*classes.length)];
+    cell.className=cell.className.replace(/hc-\d+/g,newCls);
+    cell.style.transform='scale(1.3)';
+    setTimeout(()=>{cell.style.transform='';},300);
+  },800);
+}
+
+function handleSubscribe(e){
+  e.preventDefault();
+  const input=e.target.querySelector('input');
+  const msg=document.getElementById('formMessage');
+  if(input.value){
+    msg.classList.remove('hidden');
+    input.value='';
+    setTimeout(()=>msg.classList.add('hidden'),3000);
+  }
+}
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+  anchor.addEventListener('click',function(e){
+    e.preventDefault();
+    const target=document.querySelector(this.getAttribute('href'));
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
 });
-                        </script>
-                          </div>
-                          <!-- Updated Dashboard Stats -->
-                          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div class="p-4 bg-slate border border-graphite rounded-sm">
-                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Active Feed</div>
-                          <div class="text-signal-cyan font-data-mono text-sm">MARKET_MAIN</div>
-                          </div>
-                          <div class="p-4 bg-slate border border-graphite rounded-sm">
-                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Signal Loss</div>
-                          <div class="text-on-surface font-data-mono text-sm">0.02%</div>
-                          </div>
-                          <div class="p-4 bg-slate border border-graphite rounded-sm">
-                          <div class="text-[9px] text-dust uppercase mb-1 tracking-widest">Throughput</div>
-                          <div class="text-signal-cyan font-data-mono text-sm">1.48 TB/S</div>
-                          </div>
-                          <div class="p-4 bg-slate border-2 border-warning-ember/30 rounded-sm">
-                          <div class="text-[9px] text-warning-ember uppercase mb-1 tracking-widest">Anomalies</div>
-                          <div class="text-warning-ember font-data-mono text-sm font-bold">1,247</div>
-                          </div>
-                          </div>
-                          </div>
-                          </div>
-                          </div>
-                          </section>
-                          <!-- Comparison Table Section -->
-                          <section class="py-section-v-mobile md:py-section-v-desktop bg-surface px-gutter">
-                          <div class="max-w-4xl mxauto">
-                          <div class="text-center mb-16">
-                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">BENCHMARK PROTOCOLS</span>
-                          <h2 class="font-h2-section text-2xl md:text-3xl text-on-background mb-4">The Aether Edge</h2>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full border-collapse">
-<thead>
-<tr class="border-b border-graphite">
-<th class="py-6 px-4 text-left font-label-caps text-dust text-xs">CAPABILITY</th>
-<th class="py-6 px-4 text-center font-label-caps text-dust text-xs">EXCEL</th>
-                          <th class="py-6 px-4 text-center font-label-caps text-dust text-xs">PYTHON</th>
-                          <th class="py-6 px-4 text-center font-label-caps text-signal-cyan text-xs font-extrabold bg-signal-cyan/5">AETHER</th>
-                          </tr>
-                          </thead>
-                          <tbody class="text-sm">
-                          <tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
-                          <td class="py-6 px-4 text-on-surface-variant font-medium">Entropy Visualization</td>
-                          <td class="py-6 px-4 text-center text-dust/50">Manual / Static</td>
-                          <td class="py-6 px-4 text-center text-dust/80">Code-dependent</td>
-                          <td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5">Real-time Native</td>
-                          </tr>
-                          <tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
-                          <td class="py-6 px-4 text-on-surface-variant font-medium">Real-time Anomaly Detection</td>
-<td class="py-6 px-4 text-center text-dust/50">None</td>
-<td class="py-6 px-4 text-center text-dust/80">Delayed (Batch)</td>
-<td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5">In-stream (<1ms)</td>
-</tr>
-<tr class="border-b border-graphite/30 hover:bg-slate/50 transition-colors">
-<td class="py-6 px-4 text-on-surface-variant font-medium">Time to Insight</td>
-<td class="py-6 px-4 text-center text-dust/50">Weeks</td>
-<td class="py-6 px-4 text-center text-dust/80">Days</td>
-<td class="py-6 px-4 text-center text-signal-cyan font-bold bg-signal-cyan/5 font-data-mono">< 8 SEC</td>
-                          </tr>
-                          </tbody>
-                          </table>
-                          </div>
-                          </div>
-                          </section>
-                          <!-- Pricing Section -->
-                          <section class="py-section-v-mobile md:py-section-v-desktop max-w-max-width mx-auto px-gutter" id="pricing">
-                          <div class="text-center mb-16">
-                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">SUBSCRIPTION PROTOCOLS</span>
-                          <h2 class="font-h2-section text-2xl md:text-h2-section text-on-background mb-4">Choose Your Vector</h2>
-<p class="text-dust max-w-2xl mx-auto text-sm md:text-base">Select the monitoring tier that aligns with your operational complexity.</p>
-                          </div>
-                          <!-- Pricing Cards Wrapper: Reordered for mobile featured prominence -->
-                          <div class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 lg:gap-6">
-                          <!-- Card 1: Explorer -->
-                          <div class="order-2 lg:order-1 w-full lg:w-1/4 bg-slate border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-                          <div class="mb-8">
-                          <span class="font-label-caps text-[10px] text-dust mb-2 block">ENTRY LEVEL</span>
-                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Explorer</h3>
-                          <div class="flex items-baseline gap-1">
-                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$0</span>
-                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
-                          </div>
-                          </div>
-                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  3 Active Stream Channels
-                                              </li>
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Basic Anomaly Detection
-                                              </li>
-                          </ul>
-                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-graphite text-signal-cyan font-label-caps text-xs hover:bg-pulse-glow transition-colors uppercase text-center">START FREE</a>
-                          </div><!-- Card 2: Signal -->
-                          <div class="order-3 lg:order-2 w-full lg:w-1/4 bg-slate border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-                          <div class="mb-8">
-                          <span class="font-label-caps text-[10px] text-dust mb-2 block">OPERATIONAL TIER</span>
-                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Signal</h3>
-                          <div class="flex items-baseline gap-1">
-                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$29</span>
-                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
-                          </div>
-                          </div>
-                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Unlimited Stream Channels
-                                              </li>
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Neural Anomaly Synthesis
-                                              </li>
-                          </ul>
-                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-graphite text-signal-cyan font-label-caps text-xs hover:bg-pulse-glow transition-colors uppercase text-center">ESTABLISH LINK</a>
-                          </div>
-                          <!-- Card 3: Signal Pro (Prominent/Featured) -->
-                          <div class="order-1 lg:order-3 w-full lg:w-1/4 bg-slate border-2 border-signal-cyan p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300 relative pulse-glow-border lg:scale-110 z-20 mb-12 lg:mb-0">
-                          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-signal-cyan text-void font-label-caps py-1 px-4 text-[9px] tracking-[0.2em] font-bold shadow-[0_0_15px_rgba(0,242,255,0.5)]">MOST POPULAR</div>
-                          <div class="mb-8 pt-2">
-                          <span class="font-label-caps text-[10px] text-signal-cyan mb-2 block">POWER USER</span>
-                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Signal Pro</h3>
-                          <div class="flex items-baseline gap-1">
-                          <span class="text-2xl md:text-3xl font-bold text-signal-cyan font-data-mono">$99</span>
-                          <span class="text-dust font-label-caps text-[10px]">/MO</span>
-                          </div>
-                          </div>
-                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Dedicated Clusters
-                                              </li>
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Priority Support Protocol
-                                              </li>
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Advanced API Suite
-                                              </li>
-                          </ul>
-                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 bg-signal-cyan text-void font-label-caps font-bold text-xs hover:opacity-90 transition-opacity uppercase text-center">START TRIAL</a>
-                          </div>
-                          <!-- Card 4: Aether Core -->
-                          <div class="order-4 lg:order-4 w-full lg:w-1/4 bg-surface-container-highest border border-graphite p-6 md:p-8 flex flex-col hover:-translate-y-1 transition-transform duration-300">
-                          <div class="mb-8">
-                          <span class="font-label-caps text-[10px] text-dust mb-2 block">ENTERPRISE CORE</span>
-                          <h3 class="text-xl md:text-2xl font-bold text-on-surface mb-2">Aether Core</h3>
-                          <div class="flex items-baseline gap-1">
-                          <span class="text-xl md:text-2xl font-bold text-signal-cyan font-data-mono">CUSTOM</span>
-                          </div>
-                          </div>
-                          <ul class="space-y-4 mb-10 flex-grow text-xs md:text-sm">
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  On-premise deployment
-                                              </li>
-                          <li class="flex items-center gap-3 text-on-surface-variant">
-                          <span class="material-symbols-outlined text-signal-cyan text-base">check_circle</span>
-                                                  Custom entropy models
-                                              </li>
-                          </ul>
-                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full py-3 border border-signal-cyan text-signal-cyan font-label-caps text-xs hover:bg-signal-cyan/10 transition-colors uppercase text-center">REQUEST DEMO</a>
-                          </div>
-                          </div>
-                          </section>
-                          <!-- FAQ Section -->
-                          <section class="py-section-v-mobile md:py-section-v-desktop bg-surface border-t border-graphite">
-                          <div class="max-w-3xl mx-auto px-gutter">
-                          <div class="text-center mb-16">
-                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-[0.2em] mb-4 block">KNOWLEDGE BASE</span>
-                          <h2 class="font-h2-section text-2xl md:text-3xl text-on-background mb-4">Common Questions</h2>
-                          </div>
-                          <div class="space-y-4">
-                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
-                          <summary class="flex justify-between items-center cursor-pointer list-none">
-                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">What file formats does Aether support?</span>
-                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
-                          </summary>
-                          <div class="pt-4 text-dust text-sm leading-relaxed">
-                                                  Aether natively ingests CSV, JSON, Parquet, and Avro formats. We also provide SDKs for streaming raw byte telemetry from custom C++, Rust, and Python applications.
-                                              </div>
-                          </details>
-                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
-                          <summary class="flex justify-between items-center cursor-pointer list-none">
-                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">How is my data secured?</span>
-                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
-                          </summary>
-                          <div class="pt-4 text-dust text-sm leading-relaxed">
-                                                  We are SOC 2 Type II compliant. All processing happens in-memory and is never persisted to disk unless explicitly requested. Data is encrypted in transit using TLS 1.3 and at rest using AES-256.
-                                              </div>
-                          </details>
-                          <details class="group bg-slate border border-graphite p-4 md:p-6 transition-all duration-300 hover:border-signal-cyan/50">
-                          <summary class="flex justify-between items-center cursor-pointer list-none">
-                          <span class="font-body text-on-surface font-semibold text-sm md:text-base">Can I export entropy heatmaps for reports?</span>
-                          <span class="material-symbols-outlined text-signal-cyan group-open:rotate-180 transition-transform">expand_more</span>
-                          </summary>
-                          <div class="pt-4 text-dust text-sm leading-relaxed">
-                                                  Yes. You can export any visualization as a high-resolution PNG or PDF. We also support HTML embedding for live dashboards and raw JSON export of the entropy scores for custom tooling.
-                                              </div>
-                          </details>
-                          </div>
-                          </div>
-                          </section>
-                          <!-- Final CTA -->
-                          <section class="py-section-v-mobile md:py-section-v-desktop relative overflow-hidden bg-void">
-                          <div class="absolute inset-0 z-0 flex items-center justify-center opacity-30 pointer-events-none">
-                          <div class="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-signal-cyan/20 via-transparent to-transparent scale-[2]"></div>
-                          </div>
-                          <div class="max-w-max-width mx-auto px-gutter relative z-10 text-center">
-                          <div class="inline-flex items-center gap-3 border border-signal-cyan px-6 py-2 mb-8">
-                          <span class="relative flex h-2 w-2">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-signal-cyan opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2 w-2 bg-signal-cyan"></span>
-                          </span>
-                          <span class="font-label-caps text-label-caps text-signal-cyan tracking-widest uppercase">System Status: Ready</span>
-                          </div>
-                          <h2 class="font-display-hero text-3xl md:text-6xl text-on-background mb-10 max-w-4xl mx-auto uppercase">Ready to See What Others Miss?</h2>
-                          <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                          <a href="https://forms.gle/sTCGvijCSxQKmXRV7" target="_blank" class="w-full md:w-auto px-10 py-4 bg-signal-cyan text-void font-label-caps font-bold text-base hover:opacity-90 transition-all active:scale-95 duration-150 entropy-glow uppercase text-center flex items-center justify-center">
-                                              START FREE SCAN
-                                          </a>
-                          </div>
-                          </div>
-                          </section>
-                          </main>
-                          <!-- Footer -->
-                          <footer class="bg-void border-t border-graphite w-full">
-                          <div class="max-w-max-width mx-auto px-gutter py-section-v-mobile md:py-section-v-desktop">
-                          <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-                          <div class="col-span-1 md:col-span-1">
-                          <span class="font-display-hero text-signal-cyan text-xl block mb-6 uppercase">AETHER</span>
-                          <p class="text-dust font-body text-sm mb-8 max-w-xs">Entropy systems for the next intelligence layer. Processing reality at the edge of the void.</p>
-                          <div class="flex gap-4">
-                          <a class="w-8 h-8 border border-graphite flex items-center justify-center text-dust hover:text-signal-cyan transition-colors" href="#"><span class="material-symbols-outlined text-sm">terminal</span></a>
-                          <a class="w-8 h-8 border border-graphite flex items-center justify-center text-dust hover:text-signal-cyan transition-colors" href="#"><span class="material-symbols-outlined text-sm">share</span></a>
-                          </div>
-                          </div>
-                          <div>
-                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6">PRODUCT</h5>
-                          <ul class="space-y-3">
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Scanner</a></li>
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Heatmap</a></li>
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Ghost Protocol</a></li>
-                          </ul>
-                          </div>
-                          <div>
-                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6">RESOURCES</h5>
-                          <ul class="space-y-3">
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Documentation</a></li>
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">API Reference</a></li>
-                          <li><a class="font-label-caps text-[10px] text-dust hover:text-signal-cyan transition-colors" href="#">Security</a></li>
-                          </ul>
-                          </div>
-                          <div>
-                          <h5 class="font-label-caps text-label-caps text-signal-cyan mb-6 uppercase">SUBSCRIBE TO INTEL</h5>
-                          <p class="text-dust text-xs mb-4">Weekly Data X-Rays: Public datasets analyzed with entropy heatmaps.</p>
-                          <form class="flex flex-col gap-2">
-                          <input class="bg-graphite/30 border border-graphite p-3 text-xs text-on-surface focus:border-signal-cyan focus:ring-0 outline-none font-data-mono" placeholder="your@email.com" type="email"/>
-                          <button class="bg-signal-cyan text-void font-label-caps font-bold py-3 text-xs hover:opacity-90 uppercase">ENROLL</button>
-                          </form>
-                          </div>
-                          </div>
-                          </div>
-                          <div class="border-t border-graphite/30 py-8">
-                          <div class="max-w-max-width mx-auto px-gutter flex flex-col md:flex-row justify-between items-center gap-4">
-                          <span class="font-label-caps text-[9px] text-dust tracking-widest uppercase">&copy; 2026 AETHER ENTROPY SYSTEMS. ALL RIGHTS RESERVED.</span>
-                          <div class="flex gap-6">
-                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">PRIVACY</a>
-                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">TERMS</a>
-                          <a class="font-label-caps text-[9px] text-dust hover:text-signal-cyan" href="#">LEGAL</a>
-                          </div>
-                          </div>
-                          </div> 12345
-                          </footer>
-                          </body></html>
+
+document.addEventListener('DOMContentLoaded',()=>{
+  generateHeatmap();
+  animateHeatmap();
+});
+</script>
+
+</body>
+</html>'''
+
+# Save to output directory
+output_path = '/mnt/agents/output/aether-landing-page.html'
+with open(output_path, 'w', encoding='utf-8') as f:
+    f.write(html_code)
+
+print(f"✅ File saved successfully!")
+print(f"📄 Location: {output_path}")
+print(f"📏 Size: {len(html_code):,} characters ({len(html_code)/1024:.1f} KB)")
+print(f"\n🔧 All reported issues FIXED:")
+print("   ✅ Nav button: 'Start Free →' (not 'ACCESS TERMINAL')")
+print("   ✅ Hero badge: 'Entropy Visualization Engine' with pulsing dot")
+print("   ✅ Hero stats: 3 stats bar at bottom (84.2, 1,247, 2.4 TB)")
+print("   ✅ Dashboard dots: Red/Yellow/Green (macOS style)")
+print("   ✅ Heatmap animation: Pulses every 800ms")
+print("   ✅ Comparison table: 4 rows including 'Zero Setup'")
+print("   ✅ Pricing: Exactly 3 cards (Explorer, Signal Pro, Aether Core)")
+print("   ✅ Signal Pro button: 'Start 14-Day Trial →'")
+print("   ✅ FAQ: 4 questions (not 3)")
+print("   ✅ Final CTA: Both 'Start Free Scan' and 'Request Docs' buttons")
+print("   ✅ Footer: 4 columns including Legal, email form with success message")
+print("   ✅ Mobile menu: Hamburger opens/closes properly")
