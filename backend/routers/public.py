@@ -133,7 +133,7 @@ async def public_ingest_file(
 
     try:
         sb = get_supabase()
-        sb.table("documents").insert({
+        sb.table("documents").upsert({
             "id": document_id,
             "user_id": TEST_USER_ID,
             "title": title,
@@ -142,7 +142,7 @@ async def public_ingest_file(
             "file_size": len(file_bytes),
             "chunk_count": chunk_count,
             "status": "indexed",
-        }).execute()
+        }, on_conflict="id").execute()
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Metadata storage failed: {str(e)}")
 

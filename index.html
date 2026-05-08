@@ -1,226 +1,971 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entropy Analysis</title>
+    <title>Aether — See the Chaos Before It Costs You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#08080c',
+                        surface: '#0f0f17',
+                        'surface-elevated': '#161622',
+                        'signal-cyan': '#00f0ff',
+                        'signal-cyan-dim': 'rgba(0,240,255,0.15)',
+                        'warning-ember': '#ff4d2e',
+                        'warning-ember-dim': 'rgba(255,77,46,0.15)',
+                        graphite: '#3a3a4a',
+                        'graphite-light': '#5a5a6e',
+                        'text-primary': '#e8e8ef',
+                        'text-secondary': '#9ca3af',
+                        'text-muted': '#6b7280',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(0,240,255,0.3)' },
+                            '100%': { boxShadow: '0 0 20px rgba(0,240,255,0.6)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-        header { background-color: #333; color: white; padding: 10px 20px; }
-        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
-        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-        nav li { margin: 0 15px; }
-        nav a { color: white; text-decoration: none; }
-        nav a:hover { text-decoration: underline; }
-        .hero { text-align: center; padding: 100px 20px; background-color: #e9ecef; }
-        .hero h1 { margin-bottom: 20px; }
-        .hero p { font-size: 1.2em; margin-bottom: 30px; }
-        .button { background-color: #007bff; color: white; padding: 15px 30px; border: none; cursor: pointer; margin: 10px; border-radius: 5px; font-size: 1em; }
-        .button:hover { background-color: #0056b3; }
-        .features, .pricing { padding: 50px 20px; max-width: 1200px; margin: 0 auto; text-align: center; }
-        .features ul { list-style: none; padding: 0; }
-        .features li { margin: 10px 0; font-size: 1.1em; }
-        footer { background-color: #333; color: white; text-align: center; padding: 20px; }
-        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 10px; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close:hover { color: black; cursor: pointer; }
-        .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; }
-        .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 14px 16px; transition: 0.3s; }
-        .tab button:hover { background-color: #ddd; }
-        .tab button.active { background-color: #ccc; }
-        .tabcontent { display: none; padding: 6px 12px; border: 1px solid #ccc; border-top: none; }
-        textarea { width: 100%; height: 200px; }
-        .loading { display: none; color: blue; }
-        .error { color: red; }
-        .subscription { display: none; color: orange; }
+        :root {
+            --void: #08080c;
+            --surface: #0f0f17;
+            --surface-elevated: #161622;
+            --signal-cyan: #00f0ff;
+            --signal-cyan-dim: rgba(0,240,255,0.15);
+            --warning-ember: #ff4d2e;
+            --warning-ember-dim: rgba(255,77,46,0.15);
+            --graphite: #3a3a4a;
+            --graphite-light: #5a5a6e;
+        }
+
+        body {
+            background-color: var(--void);
+            color: #e8e8ef;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--void); }
+        ::-webkit-scrollbar-thumb { background: var(--graphite); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--graphite-light); }
+
+        /* Gradient text */
+        .text-gradient {
+            background: linear-gradient(135deg, #00f0ff 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Glass card */
+        .glass-card {
+            background: rgba(15, 15, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--graphite);
+        }
+
+        /* Heatmap grid cells */
+        .heatmap-cell {
+            transition: all 0.3s ease;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.15);
+            z-index: 10;
+        }
+
+        /* Modal backdrop */
+        .modal-backdrop {
+            background: rgba(8, 8, 12, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Tab active state */
+        .tab-btn.active {
+            background: var(--signal-cyan-dim);
+            color: var(--signal-cyan);
+            border-color: var(--signal-cyan);
+        }
+
+        /* Pipeline connector line */
+        .pipeline-line {
+            background: linear-gradient(90deg, transparent, var(--signal-cyan), transparent);
+            height: 1px;
+            opacity: 0.3;
+        }
+
+        /* Pricing card hover */
+        .pricing-card {
+            transition: all 0.3s ease;
+        }
+        .pricing-card:hover {
+            border-color: var(--signal-cyan);
+            transform: translateY(-4px);
+            box-shadow: 0 0 30px rgba(0,240,255,0.1);
+        }
+
+        /* Spinner */
+        @keyframes spin-pulse {
+            0% { transform: rotate(0deg); opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { transform: rotate(360deg); opacity: 1; }
+        }
+        .spinner-cyan {
+            animation: spin-pulse 1s linear infinite;
+        }
+
+        /* Nav link underline */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--signal-cyan);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Comparison table row hover */
+        .table-row-hover:hover {
+            background: rgba(0,240,255,0.03);
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <h1>Entropy Analysis</h1>
-            <ul>
-                <li><a href="#hero">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
+<body class="antialiased min-h-screen">
+
+    <!-- Header / Nav -->
+    <header class="fixed top-0 left-0 right-0 z-50 border-b border-graphite/50 bg-void/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded bg-gradient-to-br from-signal-cyan to-purple-600 flex items-center justify-center">
+                        <span class="text-void font-bold text-sm">A</span>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-text-primary group-hover:text-signal-cyan transition-colors">Aether</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="#pipeline" class="nav-link text-text-secondary hover:text-text-primary transition-colors text-sm font-medium">Pipeline</a>
+                    <a href="#dashboard" class="nav-link text-text-secondary hover:text-text-primary transition-colors text-sm font-medium">Dashboard</a>
+                    <a href="#pricing" class="nav-link text-text-secondary hover:text-text-primary transition-colors text-sm font-medium">Pricing</a>
+                    <a href="#faq" class="nav-link text-text-secondary hover:text-text-primary transition-colors text-sm font-medium">FAQ</a>
+                </nav>
+
+                <!-- Desktop CTA -->
+                <div class="hidden md:flex items-center gap-4">
+                    <button onclick="openModal('explorer')" class="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign In</button>
+                    <button onclick="openModal('explorer')" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-colors">Start Free</button>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-text-secondary hover:text-text-primary">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 w-64 h-full bg-surface border-l border-graphite md:hidden z-50 p-6">
+            <button id="mobileMenuClose" class="absolute top-4 right-4 text-text-secondary hover:text-text-primary">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="mt-12 flex flex-col gap-6">
+                <a href="#pipeline" class="text-text-secondary hover:text-text-primary font-medium">Pipeline</a>
+                <a href="#dashboard" class="text-text-secondary hover:text-text-primary font-medium">Dashboard</a>
+                <a href="#pricing" class="text-text-secondary hover:text-text-primary font-medium">Pricing</a>
+                <a href="#faq" class="text-text-secondary hover:text-text-primary font-medium">FAQ</a>
+                <hr class="border-graphite">
+                <button onclick="openModal('explorer')" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void">Start Free</button>
+            </div>
+        </div>
     </header>
-    <section id="hero" class="hero">
-        <h1>Entropy Analysis Tool</h1>
-        <p>Discover the entropy in your data with our advanced analysis tool. Test it with free trials.</p>
-        <button class="button" onclick="openModal('Start Free Scan')">Start Free Scan</button>
-        <button class="button" onclick="openModal('Start 14-Day Trial')">Start 14-Day Trial</button>
-        <button class="button" onclick="openModal('Request Demo')">Request Demo</button>
+
+    <!-- Hero -->
+    <section id="hero" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-signal-cyan/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-signal-cyan/10 border border-signal-cyan/20 text-signal-cyan text-xs font-mono mb-8 animate-pulse-slow">
+                    <span class="w-2 h-2 rounded-full bg-signal-cyan animate-pulse-fast"></span>
+                    v2.0 Now Live
+                </div>
+                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-text-primary mb-6 leading-tight">
+                    See the Chaos<br>
+                    <span class="text-gradient">Before It Costs You</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Aether maps the entropy hidden in your documents, datasets, and pipelines. Illuminate blind spots. Predict breakdowns. Act before the noise becomes damage.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] w-full sm:w-auto">
+                        Start Free Scan
+                    </button>
+                    <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
+                        Start 14-Day Trial
+                    </button>
+                </div>
+            </div>
+        </div>
     </section>
-    <section id="features" class="features">
-        <h2>Features</h2>
-        <ul>
-            <li>Upload files (TXT, PDF) for entropy analysis</li>
-            <li>Paste text directly for quick analysis</li>
-            <li>Advanced entropy scoring using AI</li>
-            <li>Free trials with up to 2 analyses</li>
-            <li>Secure processing with backend API integration</li>
-        </ul>
+
+    <!-- Trust Bar -->
+    <section class="border-y border-graphite/30 bg-surface/50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-text-muted text-sm font-medium mb-6 uppercase tracking-widest">Trusted by teams at</p>
+            <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-50">
+                <div class="flex items-center gap-2 text-text-secondary font-semibold text-lg"><span class="text-signal-cyan">◆</span> Nexus</div>
+                <div class="flex items-center gap-2 text-text-secondary font-semibold text-lg"><span class="text-purple-500">●</span> Prismatic</div>
+                <div class="flex items-center gap-2 text-text-secondary font-semibold text-lg"><span class="text-warning-ember">▲</span> ForgeData</div>
+                <div class="flex items-center gap-2 text-text-secondary font-semibold text-lg"><span class="text-green-400">■</span> Lattice</div>
+                <div class="flex items-center gap-2 text-text-secondary font-semibold text-lg"><span class="text-blue-400">◆</span> Synapse</div>
+            </div>
+        </div>
     </section>
-    <section id="pricing" class="pricing">
-        <h2>Pricing</h2>
-        <p>Free Tier: 2 analyses per user</p>
-        <p>Signal Pro: $99/month for unlimited analyses</p>
-        <p>Aether Core: Custom pricing for enterprise solutions</p>
+
+    <!-- Pipeline Architecture -->
+    <section id="pipeline" class="py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-text-primary mb-4">The Entropy Pipeline</h2>
+                <p class="text-text-secondary max-w-2xl mx-auto">From raw noise to structured signal in four automated stages.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+                <!-- Connecting lines for desktop -->
+                <div class="hidden lg:block absolute top-1/2 left-[12.5%] right-[12.5%] pipeline-line"></div>
+
+                <!-- Stage 1 -->
+                <div class="glass-card rounded-xl p-6 relative group">
+                    <div class="w-10 h-10 rounded-lg bg-signal-cyan/10 border border-signal-cyan/20 flex items-center justify-center mb-4 text-signal-cyan font-mono font-bold">01</div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Ingest</h3>
+                    <p class="text-text-secondary text-sm leading-relaxed">Connect files, APIs, or paste text directly. We handle PDF, TXT, CSV, and JSON.</p>
+                    <div class="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-signal-cyan to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+
+                <!-- Stage 2 -->
+                <div class="glass-card rounded-xl p-6 relative group">
+                    <div class="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 text-purple-400 font-mono font-bold">02</div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Parse</h3>
+                    <p class="text-text-secondary text-sm leading-relaxed">Structural analysis extracts entities, relationships, and hidden metadata patterns.</p>
+                    <div class="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+
+                <!-- Stage 3 -->
+                <div class="glass-card rounded-xl p-6 relative group">
+                    <div class="w-10 h-10 rounded-lg bg-warning-ember/10 border border-warning-ember/20 flex items-center justify-center mb-4 text-warning-ember font-mono font-bold">03</div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Score</h3>
+                    <p class="text-text-secondary text-sm leading-relaxed">Entropy algorithms assign a 0-100 chaos score. High score = high risk.</p>
+                    <div class="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-warning-ember to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+
+                <!-- Stage 4 -->
+                <div class="glass-card rounded-xl p-6 relative group">
+                    <div class="w-10 h-10 rounded-lg bg-green-400/10 border border-green-400/20 flex items-center justify-center mb-4 text-green-400 font-mono font-bold">04</div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">Signal</h3>
+                    <p class="text-text-secondary text-sm leading-relaxed">Actionable insights delivered where you work: Slack, email, or webhook.</p>
+                    <div class="absolute -bottom-px left-4 right-4 h-px bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+            </div>
+        </div>
     </section>
-    <footer id="contact">
-        <p>&copy; 2026 Entropy Analysis. All rights reserved. Contact us for more information.</p>
+
+    <!-- Dashboard Heatmap Preview -->
+    <section id="dashboard" class="py-20 lg:py-32 bg-surface/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-text-primary mb-4">Live Entropy Heatmap</h2>
+                <p class="text-text-secondary max-w-2xl mx-auto">Visualize document chaos at a glance. Brighter cells indicate higher entropy zones requiring attention.</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 lg:p-10 max-w-5xl mx-auto border border-graphite/50">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full bg-warning-ember animate-pulse-fast"></div>
+                        <span class="text-sm font-mono text-text-secondary">Live Feed</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs font-mono text-text-muted">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-signal-cyan"></span> Low</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-purple-500"></span> Med</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-warning-ember"></span> High</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap Grid -->
+                <div id="heatmapGrid" class="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-20 gap-1 sm:gap-1.5">
+                    <!-- JS will populate this -->
+                </div>
+
+                <div class="mt-6 flex items-center justify-between text-xs font-mono text-text-muted">
+                    <span>Documents Scanned: <span class="text-text-primary" id="docCount">1,247</span></span>
+                    <span>Avg Entropy: <span class="text-warning-ember" id="avgEntropy">67.4</span></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="py-20 lg:py-32">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-text-primary mb-4">How We Compare</h2>
+                <p class="text-text-secondary">Aether versus traditional document analysis tools.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-graphite">
+                            <th class="py-4 pr-4 text-text-muted text-sm font-medium">Feature</th>
+                            <th class="py-4 px-4 text-signal-cyan text-sm font-bold">Aether</th>
+                            <th class="py-4 px-4 text-text-muted text-sm font-medium">Legacy Tools</th>
+                            <th class="py-4 pl-4 text-text-muted text-sm font-medium">Manual Review</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b border-graphite/30 table-row-hover transition-colors">
+                            <td class="py-4 pr-4 text-text-primary font-medium">Entropy Scoring</td>
+                            <td class="py-4 px-4 text-signal-cyan">✓ Automated 0-100</td>
+                            <td class="py-4 px-4 text-text-secondary">✗ Not available</td>
+                            <td class="py-4 pl-4 text-text-secondary">✗ Subjective</td>
+                        </tr>
+                        <tr class="border-b border-graphite/30 table-row-hover transition-colors">
+                            <td class="py-4 pr-4 text-text-primary font-medium">Real-time Heatmap</td>
+                            <td class="py-4 px-4 text-signal-cyan">✓ Live visualization</td>
+                            <td class="py-4 px-4 text-text-secondary">✗ Static reports</td>
+                            <td class="py-4 pl-4 text-text-secondary">✗ Not available</td>
+                        </tr>
+                        <tr class="border-b border-graphite/30 table-row-hover transition-colors">
+                            <td class="py-4 pr-4 text-text-primary font-medium">AI-Powered Chat</td>
+                            <td class="py-4 px-4 text-signal-cyan">✓ Document-aware</td>
+                            <td class="py-4 px-4 text-text-secondary">✗ Generic bots</td>
+                            <td class="py-4 pl-4 text-text-secondary">✗ N/A</td>
+                        </tr>
+                        <tr class="border-b border-graphite/30 table-row-hover transition-colors">
+                            <td class="py-4 pr-4 text-text-primary font-medium">API Access</td>
+                            <td class="py-4 px-4 text-signal-cyan">✓ REST + Webhooks</td>
+                            <td class="py-4 px-4 text-text-secondary">✗ Enterprise only</td>
+                            <td class="py-4 pl-4 text-text-secondary">✗ N/A</td>
+                        </tr>
+                        <tr class="table-row-hover transition-colors">
+                            <td class="py-4 pr-4 text-text-primary font-medium">Time to Insight</td>
+                            <td class="py-4 px-4 text-signal-cyan">&lt; 30 seconds</td>
+                            <td class="py-4 px-4 text-text-secondary">Hours</td>
+                            <td class="py-4 pl-4 text-text-secondary">Days</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Cards -->
+    <section id="pricing" class="py-20 lg:py-32 bg-surface/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-text-primary mb-4">Choose Your Signal</h2>
+                <p class="text-text-secondary max-w-2xl mx-auto">Start free. Scale when you are ready. No credit card required.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <!-- Explorer -->
+                <div class="pricing-card glass-card rounded-2xl p-6 flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Explorer</h3>
+                        <p class="text-text-muted text-sm">For individuals curious about entropy.</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-text-primary">$0</span><span class="text-text-muted">/mo</span>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-1 text-sm text-text-secondary">
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> 2 free analyses</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Text & PDF upload</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Basic entropy score</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Community support</li>
+                    </ul>
+                    <button onclick="openModal('explorer')" class="w-full py-2.5 rounded border border-graphite text-text-primary font-medium hover:border-signal-cyan hover:text-signal-cyan transition-all">Start Free</button>
+                </div>
+
+                <!-- Signal -->
+                <div class="pricing-card glass-card rounded-2xl p-6 flex flex-col">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Signal</h3>
+                        <p class="text-text-muted text-sm">For professionals who need more.</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-text-primary">$29</span><span class="text-text-muted">/mo</span>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-1 text-sm text-text-secondary">
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> 50 analyses / month</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> All file formats</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Full dashboard</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Email support</li>
+                    </ul>
+                    <button onclick="openModal('signal')" class="w-full py-2.5 rounded border border-graphite text-text-primary font-medium hover:border-signal-cyan hover:text-signal-cyan transition-all">Start 14-Day Trial</button>
+                </div>
+
+                <!-- Signal Pro -->
+                <div class="pricing-card glass-card rounded-2xl p-6 flex flex-col relative border-signal-cyan/30">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-signal-cyan text-void text-xs font-bold rounded-full">POPULAR</div>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Signal Pro</h3>
+                        <p class="text-text-muted text-sm">For teams that ship daily.</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-signal-cyan">$99</span><span class="text-text-muted">/mo</span>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-1 text-sm text-text-secondary">
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Unlimited analyses</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> API access</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Slack integration</li>
+                        <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Priority support</li>
+                    </ul>
+                    <button onclick="openModal('signal_pro')" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)]">Start Free Trial</button>
+                </div>
+
+                <!-- Aether Core -->
+                <div class="pricing-card glass-card rounded-2xl p-6 flex flex-col border-purple-500/30">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Aether Core</h3>
+                        <p class="text-text-muted text-sm">Enterprise-grade control.</p>
+                    </div>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-purple-400">Custom</span>
+                    </div>
+                    <ul class="space-y-3 mb-8 flex-1 text-sm text-text-secondary">
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> Everything in Pro</li>
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> Custom deployments</li>
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> SSO & audit logs</li>
+                        <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> Dedicated success engineer</li>
+                    </ul>
+                    <button onclick="openModal('aether_core')" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Request Demo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 lg:py-32">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-text-primary mb-4">Frequently Asked</h2>
+                <p class="text-text-secondary">Everything you need to know before you launch.</p>
+            </div>
+            <div class="space-y-4" id="faqContainer">
+                <details class="glass-card rounded-xl p-5 group cursor-pointer">
+                    <summary class="flex items-center justify-between text-text-primary font-medium list-none">
+                        <span>What is entropy scoring?</span>
+                        <span class="text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p class="mt-3 text-text-secondary text-sm leading-relaxed">Entropy scoring measures the disorder, unpredictability, and information density within a document. A score of 0 means perfectly uniform and predictable; 100 means maximum chaos and information density.</p>
+                </details>
+                <details class="glass-card rounded-xl p-5 group cursor-pointer">
+                    <summary class="flex items-center justify-between text-text-primary font-medium list-none">
+                        <span>Is my data secure?</span>
+                        <span class="text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p class="mt-3 text-text-secondary text-sm leading-relaxed">Yes. All uploads are encrypted in transit and at rest. We do not train models on your data. Enterprise plans include VPC isolation and custom data retention policies.</p>
+                </details>
+                <details class="glass-card rounded-xl p-5 group cursor-pointer">
+                    <summary class="flex items-center justify-between text-text-primary font-medium list-none">
+                        <span>Can I cancel anytime?</span>
+                        <span class="text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p class="mt-3 text-text-secondary text-sm leading-relaxed">Absolutely. There are no contracts. Cancel directly from your billing dashboard and keep access until the end of your billing period.</p>
+                </details>
+                <details class="glass-card rounded-xl p-5 group cursor-pointer">
+                    <summary class="flex items-center justify-between text-text-primary font-medium list-none">
+                        <span>Do you offer refunds?</span>
+                        <span class="text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p class="mt-3 text-text-secondary text-sm leading-relaxed">We offer a 14-day free trial so you can evaluate risk-free. If you are unhappy after upgrading, contact us within 7 days for a full refund.</p>
+                </details>
+                <details class="glass-card rounded-xl p-5 group cursor-pointer">
+                    <summary class="flex items-center justify-between text-text-primary font-medium list-none">
+                        <span>What file types are supported?</span>
+                        <span class="text-text-muted group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p class="mt-3 text-text-secondary text-sm leading-relaxed">Explorer supports TXT and PDF. Paid plans add CSV, JSON, Markdown, DOCX, and direct API ingestion.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-20 lg:py-32 bg-surface/30 relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-signal-cyan/5 rounded-full blur-3xl"></div>
+        </div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            <h2 class="text-3xl sm:text-5xl font-bold text-text-primary mb-6">Ready to see clearly?</h2>
+            <p class="text-text-secondary text-lg max-w-2xl mx-auto mb-10">Join thousands of teams who use Aether to cut through the noise. Your first two scans are free.</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] w-full sm:w-auto">
+                    Establish Link
+                </button>
+                <button onclick="openModal('aether_core')" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
+                    Request Demo
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-graphite/30 py-12 bg-void">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-1">
+                    <a href="#" class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded bg-gradient-to-br from-signal-cyan to-purple-600 flex items-center justify-center">
+                            <span class="text-void font-bold text-sm">A</span>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-text-primary">Aether</span>
+                    </a>
+                    <p class="text-text-muted text-sm">See the chaos before it costs you.</p>
+                </div>
+                <div>
+                    <h4 class="text-text-primary font-semibold mb-4 text-sm">Product</h4>
+                    <ul class="space-y-2 text-sm text-text-secondary">
+                        <li><a href="#pipeline" class="hover:text-signal-cyan transition-colors">Pipeline</a></li>
+                        <li><a href="#dashboard" class="hover:text-signal-cyan transition-colors">Dashboard</a></li>
+                        <li><a href="#pricing" class="hover:text-signal-cyan transition-colors">Pricing</a></li>
+                        <li><a href="#" onclick="openModal('explorer')" class="hover:text-signal-cyan transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-text-primary font-semibold mb-4 text-sm">Company</h4>
+                    <ul class="space-y-2 text-sm text-text-secondary">
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-text-primary font-semibold mb-4 text-sm">Legal</h4>
+                    <ul class="space-y-2 text-sm text-text-secondary">
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Privacy</a></li>
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Terms</a></li>
+                        <li><a href="#" class="hover:text-signal-cyan transition-colors">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-graphite/30 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-text-muted text-sm">© 2026 Aether Systems, Inc. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-text-muted hover:text-signal-cyan transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                    <a href="#" class="text-text-muted hover:text-signal-cyan transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
+                    <a href="#" class="text-text-muted hover:text-signal-cyan transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+                </div>
+            </div>
+        </div>
     </footer>
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Entropy Analysis</h2>
-            <div class="tab">
-                <button class="tablinks" onclick="openTab(event, 'File')">Upload File</button>
-                <button class="tablinks" onclick="openTab(event, 'Text')">Paste Text</button>
-            </div>
-            <div id="File" class="tabcontent">
-                <form id="fileForm">
-                    <input type="file" id="fileInput" accept=".txt,.pdf" required>
-                    <br><br>
-                    <button type="submit" class="button" id="fileSubmit">Analyze</button>
-                </form>
-            </div>
-            <div id="Text" class="tabcontent">
-                <form id="textForm">
-                    <textarea id="textInput" placeholder="Paste your text here..." required></textarea>
-                    <br><br>
-                    <button type="submit" class="button" id="textSubmit">Analyze</button>
-                </form>
-            </div>
-            <div class="loading" id="loading">Analyzing... Please wait.</div>
-            <div class="error" id="error"></div>
-            <div class="subscription" id="subscription">
-                Free trials exhausted. Please subscribe to continue.
-                <br><br>
-                <button class="button" onclick="subscribe('signal_pro')">Subscribe to Signal Pro ($99/month)</button>
-                <button class="button" onclick="subscribe('aether_core')">Subscribe to Aether Core (Custom)</button>
+
+    <!-- Test Modal -->
+    <div id="testModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+        <div class="modal-backdrop absolute inset-0" onclick="closeModal()"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="glass-card border border-graphite rounded-2xl w-full max-w-lg relative animate-[float_0.3s_ease-out]">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b border-graphite/50">
+                    <h3 class="text-lg font-semibold text-text-primary">Analyze Document Entropy</h3>
+                    <button onclick="closeModal()" class="text-text-muted hover:text-text-primary transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-graphite/50">
+                    <button id="tabPaste" class="tab-btn active flex-1 py-3 text-sm font-medium text-text-secondary border-b-2 border-transparent hover:text-text-primary transition-all" onclick="switchTab('paste')">
+                        Paste Text
+                    </button>
+                    <button id="tabUpload" class="tab-btn flex-1 py-3 text-sm font-medium text-text-secondary border-b-2 border-transparent hover:text-text-primary transition-all" onclick="switchTab('upload')">
+                        Upload File
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6">
+                    <!-- Paste Tab -->
+                    <div id="panelPaste" class="tab-panel">
+                        <textarea id="textInput" placeholder="Paste your document text here..." class="w-full h-40 bg-void border border-graphite rounded-lg p-3 text-text-primary text-sm placeholder-text-muted focus:outline-none focus:border-signal-cyan focus:ring-1 focus:ring-signal-cyan/30 resize-none transition-all"></textarea>
+                    </div>
+
+                    <!-- Upload Tab -->
+                    <div id="panelUpload" class="tab-panel hidden">
+                        <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-graphite rounded-lg cursor-pointer hover:border-signal-cyan hover:bg-signal-cyan/5 transition-all">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-3 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                <p class="mb-2 text-sm text-text-secondary"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-text-muted">.TXT, .PDF (max 10MB)</p>
+                            </div>
+                            <input id="fileInput" type="file" accept=".txt,.pdf" class="hidden" onchange="updateFileName()" />
+                        </label>
+                        <p id="fileName" class="mt-2 text-xs text-signal-cyan font-mono hidden"></p>
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <button id="analyzeBtn" onclick="runAnalysis()" class="mt-6 w-full py-3 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center justify-center gap-2">
+                        <span>Analyze</span>
+                    </button>
+
+                    <!-- Loading -->
+                    <div id="loadingState" class="hidden mt-6 flex flex-col items-center gap-3">
+                        <div class="w-8 h-8 border-2 border-signal-cyan border-t-transparent rounded-full spinner-cyan"></div>
+                        <p class="text-sm text-text-secondary animate-pulse">Running entropy analysis...</p>
+                    </div>
+
+                    <!-- Error -->
+                    <div id="errorState" class="hidden mt-4 p-3 rounded bg-warning-ember/10 border border-warning-ember/20 text-warning-ember text-sm"></div>
+
+                    <!-- Results -->
+                    <div id="resultState" class="hidden mt-6 space-y-4">
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full border-4 border-signal-cyan/20 mb-3">
+                                <span id="entropyScore" class="text-3xl font-bold text-signal-cyan">--</span>
+                            </div>
+                            <p class="text-text-muted text-xs uppercase tracking-widest">Entropy Score</p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-void border border-graphite/50">
+                            <h4 class="text-sm font-semibold text-text-primary mb-2">Summary</h4>
+                            <p id="resultSummary" class="text-sm text-text-secondary leading-relaxed"></p>
+                        </div>
+                        <div id="sourcesBox" class="p-4 rounded-lg bg-void border border-graphite/50 hidden">
+                            <h4 class="text-sm font-semibold text-text-primary mb-2">Sources</h4>
+                            <ul id="sourcesList" class="text-sm text-text-secondary space-y-1"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Subscription Prompt -->
+                    <div id="subscriptionPrompt" class="hidden mt-6 p-4 rounded-lg bg-warning-ember/5 border border-warning-ember/20 text-center">
+                        <p class="text-text-primary font-medium mb-1">Free analyses exhausted</p>
+                        <p class="text-text-secondary text-sm mb-4">You have used your 2 free scans. Upgrade to continue.</p>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="subscribe('signal_pro')" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all">Upgrade to Signal Pro — $99/mo</button>
+                            <button onclick="subscribe('aether_core')" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Contact Aether Core — Custom</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://js.stripe.com/v3/"></script>
     <script>
-        const API_BASE = 'https://aether-landing.onrender.com/api';
-        const ANALYSIS_API_BASE = '/api/public';
-        const STRIPE_PUBLISHABLE_KEY = 'pk_test_placeholder'; // Replace with actual key
-        let freeUses = parseInt(localStorage.getItem('freeUses')) || 0;
+        const API_BASE = 'https://aether-landing.onrender.com';
+        let freeUses = parseInt(localStorage.getItem('aether_free_uses')) || 0;
+        let currentTab = 'paste';
 
-        function openModal(buttonType) {
-            if (freeUses >= 2) {
-                document.getElementById('subscription').style.display = 'block';
-                return;
+        // ========================
+        // Mobile Menu
+        // ========================
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.add('open'));
+        mobileMenuClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        });
+
+        // ========================
+        // Heatmap
+        // ========================
+        function initHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            if (!grid) return;
+            const cols = window.innerWidth >= 768 ? 20 : (window.innerWidth >= 640 ? 15 : 10);
+            grid.className = `grid gap-1 sm:gap-1.5 grid-cols-${cols}`;
+
+            const totalCells = cols * 8;
+            grid.innerHTML = '';
+
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                const entropy = Math.random() * 100;
+                let color;
+                if (entropy < 33) {
+                    color = `rgba(0, 240, 255, ${0.2 + Math.random() * 0.4})`;
+                } else if (entropy < 66) {
+                    color = `rgba(124, 58, 237, ${0.2 + Math.random() * 0.4})`;
+                } else {
+                    color = `rgba(255, 77, 46, ${0.2 + Math.random() * 0.4})`;
+                }
+                cell.className = 'heatmap-cell rounded-sm h-6 sm:h-8 cursor-pointer';
+                cell.style.backgroundColor = color;
+                cell.title = `Entropy: ${entropy.toFixed(1)}`;
+                grid.appendChild(cell);
             }
-            document.getElementById('myModal').style.display = 'block';
-            openTab(null, 'File'); // Default to file tab
+
+            // Animate random cells
+            setInterval(() => {
+                const cells = grid.querySelectorAll('.heatmap-cell');
+                const idx = Math.floor(Math.random() * cells.length);
+                const cell = cells[idx];
+                const oldOpacity = cell.style.opacity || '1';
+                cell.style.opacity = '0.4';
+                setTimeout(() => { cell.style.opacity = oldOpacity; }, 400);
+            }, 800);
+        }
+
+        // ========================
+        // Modal
+        // ========================
+        function openModal(plan) {
+            const modal = document.getElementById('testModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            resetModal();
+
+            if (freeUses >= 2) {
+                document.getElementById('analyzeBtn').classList.add('hidden');
+                document.getElementById('textInput').disabled = true;
+                document.getElementById('fileInput').disabled = true;
+                document.getElementById('subscriptionPrompt').classList.remove('hidden');
+            } else {
+                document.getElementById('analyzeBtn').classList.remove('hidden');
+                document.getElementById('textInput').disabled = false;
+                document.getElementById('fileInput').disabled = false;
+                document.getElementById('subscriptionPrompt').classList.add('hidden');
+            }
         }
 
         function closeModal() {
-            document.getElementById('myModal').style.display = 'none';
-            document.getElementById('error').textContent = '';
-            document.getElementById('subscription').style.display = 'none';
+            const modal = document.getElementById('testModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
         }
 
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            if (evt) evt.currentTarget.className += " active";
+        function resetModal() {
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('errorState').textContent = '';
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('resultState').classList.add('hidden');
+            document.getElementById('subscriptionPrompt').classList.add('hidden');
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('textInput').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileName').classList.add('hidden');
+            switchTab('paste');
         }
 
-        document.getElementById('fileForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (freeUses >= 2) return;
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabPaste').classList.toggle('active', tab === 'paste');
+            document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+            document.getElementById('panelPaste').classList.toggle('hidden', tab !== 'paste');
+            document.getElementById('panelUpload').classList.toggle('hidden', tab !== 'upload');
+        }
+
+        function updateFileName() {
             const file = document.getElementById('fileInput').files[0];
-            if (!file) return;
-            await analyze('file', file);
-        });
+            const nameEl = document.getElementById('fileName');
+            if (file) {
+                nameEl.textContent = file.name;
+                nameEl.classList.remove('hidden');
+            } else {
+                nameEl.classList.add('hidden');
+            }
+        }
 
-        document.getElementById('textForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (freeUses >= 2) return;
-            const text = document.getElementById('textInput').value;
-            if (!text.trim()) return;
-            await analyze('text', text);
-        });
+        // ========================
+        // Analysis
+        // ========================
+        async function runAnalysis() {
+            if (freeUses >= 2) {
+                document.getElementById('subscriptionPrompt').classList.remove('hidden');
+                return;
+            }
 
-        async function analyze(type, data) {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').textContent = '';
-            document.getElementById('fileSubmit').disabled = true;
-            document.getElementById('textSubmit').disabled = true;
+            let payload;
+            let isFile = false;
+
+            if (currentTab === 'paste') {
+                const text = document.getElementById('textInput').value.trim();
+                if (!text) {
+                    showError('Please paste some text to analyze.');
+                    return;
+                }
+                payload = text;
+            } else {
+                const file = document.getElementById('fileInput').files[0];
+                if (!file) {
+                    showError('Please select a file to upload.');
+                    return;
+                }
+                payload = file;
+                isFile = true;
+            }
+
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('resultState').classList.add('hidden');
+
             try {
-                let response;
-                if (type === 'file') {
+                let ingestResponse;
+                if (isFile) {
                     const formData = new FormData();
-                    formData.append('file', data);
-                    formData.append('title', data.name);
-                    response = await fetch(`${ANALYSIS_API_BASE}/ingest/file`, {
+                    formData.append('file', payload);
+                    formData.append('title', payload.name || 'Uploaded File');
+                    ingestResponse = await fetch(`${API_BASE}/api/public/ingest/file`, {
                         method: 'POST',
                         body: formData
                     });
                 } else {
-                    response = await fetch(`${ANALYSIS_API_BASE}/ingest/text`, {
+                    ingestResponse = await fetch(`${API_BASE}/api/public/ingest/text`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: data, title: 'Pasted Text' })
+                        body: JSON.stringify({ content: payload, title: 'Free Analysis' })
                     });
                 }
-                if (!response.ok) throw new Error(`Ingest failed: ${response.statusText}`);
-                const result = await response.json();
-                const documentId = result.document_id;
 
-                // Now ask for entropy analysis
-                const chatResponse = await fetch(`${ANALYSIS_API_BASE}/chat/ask`, {
+                if (!ingestResponse.ok) {
+                    const err = await ingestResponse.json().catch(() => ({}));
+                    throw new Error(err.message || `Ingest failed: ${ingestResponse.statusText}`);
+                }
+
+                const ingestData = await ingestResponse.json();
+                const docId = ingestData.document_id || ingestData.id;
+                if (!docId) throw new Error('No document ID returned from server.');
+
+                const chatResponse = await fetch(`${API_BASE}/api/public/chat/ask`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: 'Analyze the entropy of this document.', document_id: documentId })
+                    body: JSON.stringify({
+                        message: 'Analyze the entropy and data patterns of this document. Provide an entropy score from 0-100 and a brief summary.',
+                        document_id: docId
+                    })
                 });
-                if (!chatResponse.ok) throw new Error(`Analysis failed: ${chatResponse.statusText}`);
-                const chatResult = await chatResponse.json();
-                if (!chatResult.meta || !chatResult.meta.entropy_score) throw new Error('Analysis response missing entropy score');
-                alert(`Analysis complete. Entropy Score: ${chatResult.meta.entropy_score}`);
+
+                if (!chatResponse.ok) {
+                    const err = await chatResponse.json().catch(() => ({}));
+                    throw new Error(err.message || `Analysis failed: ${chatResponse.statusText}`);
+                }
+
+                const chatData = await chatResponse.json();
+                const score = chatData.meta?.entropy_score ?? chatData.entropy_score ?? null;
+                const content = chatData.content || chatData.summary || chatData.message || 'No summary available.';
+                const sources = chatData.sources || chatData.meta?.sources || [];
+
+                displayResults(score, content, sources);
                 freeUses++;
-                localStorage.setItem('freeUses', freeUses);
-                closeModal();
+                localStorage.setItem('aether_free_uses', freeUses);
             } catch (err) {
-                document.getElementById('error').textContent = err.message;
+                showError(err.message);
             } finally {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('fileSubmit').disabled = false;
-                document.getElementById('textSubmit').disabled = false;
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('analyzeBtn').disabled = false;
             }
         }
 
+        function displayResults(score, summary, sources) {
+            const resultState = document.getElementById('resultState');
+            resultState.classList.remove('hidden');
+
+            const scoreEl = document.getElementById('entropyScore');
+            if (score !== null && score !== undefined) {
+                scoreEl.textContent = Number(score).toFixed(1);
+                if (score >= 70) scoreEl.className = 'text-3xl font-bold text-warning-ember';
+                else if (score >= 40) scoreEl.className = 'text-3xl font-bold text-purple-400';
+                else scoreEl.className = 'text-3xl font-bold text-signal-cyan';
+            } else {
+                scoreEl.textContent = 'N/A';
+                scoreEl.className = 'text-3xl font-bold text-text-muted';
+            }
+
+            document.getElementById('resultSummary').textContent = summary;
+
+            const sourcesBox = document.getElementById('sourcesBox');
+            const sourcesList = document.getElementById('sourcesList');
+            if (sources && sources.length > 0) {
+                sourcesBox.classList.remove('hidden');
+                sourcesList.innerHTML = sources.map(s => `<li class="truncate">• ${s}</li>`).join('');
+            } else {
+                sourcesBox.classList.add('hidden');
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorState');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        // ========================
+        // Payment
+        // ========================
         async function subscribe(product) {
             try {
-                const response = await fetch(`${API_BASE}/create-checkout-session`, {
+                const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ product })
                 });
                 if (!response.ok) throw new Error('Failed to create checkout session');
                 const result = await response.json();
-                window.location.href = result.checkout_url;
+                if (result.checkout_url) {
+                    window.location.href = result.checkout_url;
+                } else {
+                    throw new Error('No checkout URL returned');
+                }
             } catch (err) {
-                alert('Subscription error: ' + err.message);
+                showError('Payment error: ' + err.message);
             }
         }
+
+        // ========================
+        // Init
+        // ========================
+        document.addEventListener('DOMContentLoaded', () => {
+            initHeatmap();
+            window.addEventListener('resize', initHeatmap);
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 </body>
 </html>

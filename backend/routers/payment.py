@@ -19,6 +19,11 @@ async def create_checkout_session(product: str):
         raise HTTPException(status_code=400, detail="Invalid product")
 
     try:
+        if settings.stripe_secret_key == "sk_test_placeholder":
+            raise HTTPException(
+                status_code=400,
+                detail="Stripe is not configured. Please set your STRIPE_SECRET_KEY in the .env file.",
+            )
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[
@@ -32,5 +37,7 @@ async def create_checkout_session(product: str):
             cancel_url="https://yourdomain.com/cancel",
         )
         return {"checkout_url": session.url}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

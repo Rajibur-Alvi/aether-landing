@@ -17,9 +17,12 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""
 
     # Server
+    # NOTE: Replace https://project-dmwt4.vercel.app with your actual Vercel domain.
     cors_origins: list[str] = [
         "https://project-dmwt4.vercel.app",
+        "https://aether-landing.onrender.com",
         "http://localhost:3000",
+        "http://localhost:8000",
     ]
     environment: str = "development"
 
