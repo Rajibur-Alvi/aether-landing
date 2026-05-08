@@ -24,7 +24,12 @@ MODEL_MAP = {
 
 @router.post("/ingest/text", response_model=IngestResponse)
 async def public_ingest_text(request: TextIngestRequest):
-    """Public ingest text for testing."""
+    """Public ingest text for free trials. Limited to 50KB content."""
+    # Free trial limits
+    content_size = len(request.content.encode("utf-8"))
+    if content_size > 50 * 1024:  # 50KB limit
+        raise HTTPException(status_code=400, detail="Content too large for free trial. Maximum 50KB allowed.")
+
     settings = get_settings()
     document_id = request.document_id or str(uuid.uuid4())
 
@@ -73,11 +78,16 @@ async def public_ingest_file(
     file: UploadFile = File(...),
     title: str = Form(...),
 ):
-    """Public ingest file for testing."""
+    """Public ingest file for free trials. Limited to 1MB files."""
     settings = get_settings()
     document_id = str(uuid.uuid4())
 
     file_bytes = await file.read()
+
+    # Free trial limits
+    if len(file_bytes) > 1024 * 1024:  # 1MB limit
+        raise HTTPException(status_code=400, detail="File too large for free trial. Maximum 1MB allowed.")
+
     filename = file.filename or "untitled"
 
     content_type = file.content_type or ""
@@ -146,14 +156,20 @@ async def public_ingest_file(
 
 @router.post("/chat/ask", response_model=ChatMessageResponse)
 async def public_ask_question(request: ChatRequest):
-    """Public RAG endpoint for testing."""
+    """Public RAG endpoint for free trials. Limited functionality."""
     settings = get_settings()
     start = time.perf_counter()
 
+    # Free trial limits
+    if request.max_tokens and request.max_tokens > 512:
+        raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
+    if request.temperature and request.temperature < 0.5:
+        raise HTTPException(status_code=400, detail="Temperature must be at least 0.5 for free trial.")
+
     model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.3-70b-versatile")
-    temperature = request.temperature or 0.7
-    max_tokens = request.max_tokens or 1024
-    top_k = settings.default_top_k
+    temperature = max(request.temperature or 0.7, 0.5)  # Enforce minimum temperature
+    max_tokens = min(request.max_tokens or 1024, 512)  # Limit max tokens
+    top_k = 3  # Reduced for free trial
 
     # Search Pinecone
     try:
@@ -210,13 +226,19 @@ async def public_ask_question(request: ChatRequest):
 
 @router.post("/chat/ask/stream")
 async def public_ask_question_stream(request: ChatRequest):
-    """Public streaming RAG endpoint for testing."""
+    """Public streaming RAG endpoint for free trials. Limited functionality."""
     settings = get_settings()
 
+    # Free trial limits
+    if request.max_tokens and request.max_tokens > 512:
+        raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
+    if request.temperature and request.temperature < 0.5:
+        raise HTTPException(status_code=400, detail="Temperature must be at least 0.5 for free trial.")
+
     model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.3-70b-versatile")
-    temperature = request.temperature or 0.7
-    max_tokens = request.max_tokens or 1024
-    top_k = settings.default_top_k
+    temperature = max(request.temperature or 0.7, 0.5)  # Enforce minimum temperature
+    max_tokens = min(request.max_tokens or 1024, 512)  # Limit max tokens
+    top_k = 3  # Reduced for free trial
 
     try:
         chunks = await search_similar_chunks(

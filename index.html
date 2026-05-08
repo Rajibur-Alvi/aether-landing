@@ -5,10 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entropy Analysis</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .button { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 10px; border-radius: 5px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background-color: #333; color: white; padding: 10px 20px; }
+        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
+        nav li { margin: 0 15px; }
+        nav a { color: white; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        .hero { text-align: center; padding: 100px 20px; background-color: #e9ecef; }
+        .hero h1 { margin-bottom: 20px; }
+        .hero p { font-size: 1.2em; margin-bottom: 30px; }
+        .button { background-color: #007bff; color: white; padding: 15px 30px; border: none; cursor: pointer; margin: 10px; border-radius: 5px; font-size: 1em; }
         .button:hover { background-color: #0056b3; }
+        .features, .pricing { padding: 50px 20px; max-width: 1200px; margin: 0 auto; text-align: center; }
+        .features ul { list-style: none; padding: 0; }
+        .features li { margin: 10px 0; font-size: 1.1em; }
+        footer { background-color: #333; color: white; text-align: center; padding: 20px; }
         .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 10px; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
@@ -25,43 +37,72 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <header>
+        <nav>
+            <h1>Entropy Analysis</h1>
+            <ul>
+                <li><a href="#hero">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section id="hero" class="hero">
         <h1>Entropy Analysis Tool</h1>
-        <p>Test our entropy analysis with free trials.</p>
-        <button class="button" onclick="openModal('Start Free')">Start Free</button>
+        <p>Discover the entropy in your data with our advanced analysis tool. Test it with free trials.</p>
+        <button class="button" onclick="openModal('Start Free Scan')">Start Free Scan</button>
         <button class="button" onclick="openModal('Start 14-Day Trial')">Start 14-Day Trial</button>
         <button class="button" onclick="openModal('Request Demo')">Request Demo</button>
-
-        <div id="myModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal()">&times;</span>
-                <h2>Entropy Analysis</h2>
-                <div class="tab">
-                    <button class="tablinks" onclick="openTab(event, 'File')">Upload File</button>
-                    <button class="tablinks" onclick="openTab(event, 'Text')">Paste Text</button>
-                </div>
-                <div id="File" class="tabcontent">
-                    <form id="fileForm">
-                        <input type="file" id="fileInput" accept=".txt,.pdf" required>
-                        <br><br>
-                        <button type="submit" class="button">Analyze</button>
-                    </form>
-                </div>
-                <div id="Text" class="tabcontent">
-                    <form id="textForm">
-                        <textarea id="textInput" placeholder="Paste your text here..." required></textarea>
-                        <br><br>
-                        <button type="submit" class="button">Analyze</button>
-                    </form>
-                </div>
-                <div class="loading" id="loading">Analyzing... Please wait.</div>
-                <div class="error" id="error"></div>
-                <div class="subscription" id="subscription">
-                    Free trials exhausted. Please subscribe to continue.
+    </section>
+    <section id="features" class="features">
+        <h2>Features</h2>
+        <ul>
+            <li>Upload files (TXT, PDF) for entropy analysis</li>
+            <li>Paste text directly for quick analysis</li>
+            <li>Advanced entropy scoring using AI</li>
+            <li>Free trials with up to 2 analyses</li>
+            <li>Secure processing with backend API integration</li>
+        </ul>
+    </section>
+    <section id="pricing" class="pricing">
+        <h2>Pricing</h2>
+        <p>Free Tier: 2 analyses per user</p>
+        <p>Signal Pro: $99/month for unlimited analyses</p>
+        <p>Aether Core: Custom pricing for enterprise solutions</p>
+    </section>
+    <footer id="contact">
+        <p>&copy; 2026 Entropy Analysis. All rights reserved. Contact us for more information.</p>
+    </footer>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Entropy Analysis</h2>
+            <div class="tab">
+                <button class="tablinks" onclick="openTab(event, 'File')">Upload File</button>
+                <button class="tablinks" onclick="openTab(event, 'Text')">Paste Text</button>
+            </div>
+            <div id="File" class="tabcontent">
+                <form id="fileForm">
+                    <input type="file" id="fileInput" accept=".txt,.pdf" required>
                     <br><br>
-                    <button class="button" onclick="subscribe('signal_pro')">Subscribe to Signal Pro ($99/month)</button>
-                    <button class="button" onclick="subscribe('aether_core')">Subscribe to Aether Core (Custom)</button>
-                </div>
+                    <button type="submit" class="button" id="fileSubmit">Analyze</button>
+                </form>
+            </div>
+            <div id="Text" class="tabcontent">
+                <form id="textForm">
+                    <textarea id="textInput" placeholder="Paste your text here..." required></textarea>
+                    <br><br>
+                    <button type="submit" class="button" id="textSubmit">Analyze</button>
+                </form>
+            </div>
+            <div class="loading" id="loading">Analyzing... Please wait.</div>
+            <div class="error" id="error"></div>
+            <div class="subscription" id="subscription">
+                Free trials exhausted. Please subscribe to continue.
+                <br><br>
+                <button class="button" onclick="subscribe('signal_pro')">Subscribe to Signal Pro ($99/month)</button>
+                <button class="button" onclick="subscribe('aether_core')">Subscribe to Aether Core (Custom)</button>
             </div>
         </div>
     </div>
@@ -69,6 +110,7 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         const API_BASE = 'https://aether-landing.onrender.com/api';
+        const ANALYSIS_API_BASE = '/api/public';
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_placeholder'; // Replace with actual key
         let freeUses = parseInt(localStorage.getItem('freeUses')) || 0;
 
@@ -120,35 +162,38 @@
         async function analyze(type, data) {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('error').textContent = '';
+            document.getElementById('fileSubmit').disabled = true;
+            document.getElementById('textSubmit').disabled = true;
             try {
                 let response;
                 if (type === 'file') {
                     const formData = new FormData();
                     formData.append('file', data);
                     formData.append('title', data.name);
-                    response = await fetch(`${API_BASE}/ingest/file`, {
+                    response = await fetch(`${ANALYSIS_API_BASE}/ingest/file`, {
                         method: 'POST',
                         body: formData
                     });
                 } else {
-                    response = await fetch(`${API_BASE}/ingest/text`, {
+                    response = await fetch(`${ANALYSIS_API_BASE}/ingest/text`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ content: data, title: 'Pasted Text' })
                     });
                 }
-                if (!response.ok) throw new Error('Ingest failed');
+                if (!response.ok) throw new Error(`Ingest failed: ${response.statusText}`);
                 const result = await response.json();
                 const documentId = result.document_id;
 
                 // Now ask for entropy analysis
-                const chatResponse = await fetch(`${API_BASE}/chat/ask`, {
+                const chatResponse = await fetch(`${ANALYSIS_API_BASE}/chat/ask`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: 'Analyze the entropy of this document.', document_id: documentId })
                 });
-                if (!chatResponse.ok) throw new Error('Analysis failed');
+                if (!chatResponse.ok) throw new Error(`Analysis failed: ${chatResponse.statusText}`);
                 const chatResult = await chatResponse.json();
+                if (!chatResult.meta || !chatResult.meta.entropy_score) throw new Error('Analysis response missing entropy score');
                 alert(`Analysis complete. Entropy Score: ${chatResult.meta.entropy_score}`);
                 freeUses++;
                 localStorage.setItem('freeUses', freeUses);
@@ -157,6 +202,8 @@
                 document.getElementById('error').textContent = err.message;
             } finally {
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('fileSubmit').disabled = false;
+                document.getElementById('textSubmit').disabled = false;
             }
         }
 
