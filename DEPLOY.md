@@ -94,6 +94,8 @@ cp frontend-lib/api.ts          your-frontend/src/lib/api.ts
 cp frontend-lib/useEntropyChat.ts  your-frontend/src/hooks/useEntropyChat.ts
 ```
 
+> The repo also includes `index.html`, a static landing page demo that uses `/api/public/*` for two free trials and then shows a subscription prompt instead of a Google Form.
+
 ---
 
 ## Step 7 — Verify (2 min)

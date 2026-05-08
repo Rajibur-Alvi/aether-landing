@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     default_model: str = "llama-3.3-70b-versatile"
     embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
 
+    # Stripe
+    stripe_secret_key: str = "sk_test_placeholder"
+    stripe_publishable_key: str = "pk_test_placeholder"
+    stripe_signal_pro_price_id: str = "price_placeholder_signal_pro"
+    stripe_aether_core_price_id: str = "price_placeholder_aether_core"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

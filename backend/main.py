@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
-from routers import health, chat, ingest, documents, user
+from routers import health, chat, ingest, documents, user, public, payment
 from services.pinecone_service import _get_pinecone
 from services.embedding_service import _load_model
 
@@ -68,6 +68,8 @@ app.include_router(chat.router, prefix="/api")
 app.include_router(ingest.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 app.include_router(user.router, prefix="/api")
+app.include_router(public.router, prefix="/api")
+app.include_router(payment.router, prefix="/api")
 
 
 @app.get("/")

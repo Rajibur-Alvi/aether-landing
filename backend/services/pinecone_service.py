@@ -1,5 +1,5 @@
 import asyncio
-from pinecone import Pinecone, ServerlessSpec
+from pinecone.pinecone import Pinecone
 from config import get_settings
 from services.embedding_service import get_embeddings, get_single_embedding
 
