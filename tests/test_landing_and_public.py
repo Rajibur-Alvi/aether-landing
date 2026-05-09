@@ -52,5 +52,14 @@ class PublicFreeScanTest(unittest.TestCase):
         self.assertGreaterEqual(source.count("max_tokens = min(request.max_tokens or 512, 512)"), 2)
 
 
+class BackendAuthTest(unittest.TestCase):
+    def test_auth_middleware_supports_supabase_es256_jwks_tokens(self):
+        source = (ROOT / "backend" / "middleware" / "auth.py").read_text()
+        self.assertIn("jwt.get_unverified_header", source)
+        self.assertIn(".well-known/jwks.json", source)
+        self.assertIn('"ES256"', source)
+        self.assertNotIn('algorithms=["HS256"]', source)
+
+
 if __name__ == "__main__":
     unittest.main()
