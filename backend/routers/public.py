@@ -7,7 +7,6 @@ from sse_starlette.sse import EventSourceResponse
 from models.schemas import TextIngestRequest, IngestResponse, ChatRequest, ChatMessageResponse, ChatMeta, ChatSource
 from services.pinecone_service import upsert_document_chunks, search_similar_chunks
 from services.groq_service import generate_rag_response, stream_rag_response
-from services.supabase_service import get_supabase
 from utils.text_splitter import split_text, extract_text_from_pdf_bytes
 from config import get_settings
 
@@ -50,20 +49,6 @@ async def public_ingest_text(request: TextIngestRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Vector storage failed: {str(e)}")
-
-    try:
-        sb = get_supabase()
-        sb.table("documents").upsert({
-            "id": document_id,
-            "user_id": TEST_USER_ID,
-            "title": request.title,
-            "file_type": "text",
-            "file_size": len(request.content.encode("utf-8")),
-            "chunk_count": chunk_count,
-            "status": "indexed",
-        }, on_conflict="id").execute()
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Metadata storage failed: {str(e)}")
 
     return IngestResponse(
         document_id=document_id,
@@ -130,21 +115,6 @@ async def public_ingest_file(
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Vector storage failed: {str(e)}")
-
-    try:
-        sb = get_supabase()
-        sb.table("documents").upsert({
-            "id": document_id,
-            "user_id": TEST_USER_ID,
-            "title": title,
-            "filename": filename,
-            "file_type": filename.rsplit(".", 1)[-1].lower() if "." in filename else "unknown",
-            "file_size": len(file_bytes),
-            "chunk_count": chunk_count,
-            "status": "indexed",
-        }, on_conflict="id").execute()
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Metadata storage failed: {str(e)}")
 
     return IngestResponse(
         document_id=document_id,

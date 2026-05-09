@@ -194,8 +194,8 @@
 
                 <!-- Desktop CTA -->
                 <div class="hidden md:flex items-center gap-4">
-                    <button onclick="openModal('explorer')" class="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign In</button>
-                    <button onclick="openModal('explorer')" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-colors">Start Free</button>
+                    <button onclick="goDashboard()" class="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Sign In</button>
+                    <button onclick="goDashboard()" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-colors">Start Free</button>
                 </div>
 
                 <!-- Mobile menu button -->
@@ -216,7 +216,7 @@
                 <a href="#pricing" class="text-text-secondary hover:text-text-primary font-medium">Pricing</a>
                 <a href="#faq" class="text-text-secondary hover:text-text-primary font-medium">FAQ</a>
                 <hr class="border-graphite">
-                <button onclick="openModal('explorer')" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void">Start Free</button>
+                <button onclick="goDashboard()" class="px-4 py-2 text-sm font-semibold rounded bg-signal-cyan text-void">Start Free</button>
             </div>
         </div>
     </header>
@@ -244,7 +244,7 @@
                     <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] w-full sm:w-auto">
                         Start Free Scan
                     </button>
-                    <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
+                    <button onclick="subscribe('signal', event)" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
                         Start 14-Day Trial
                     </button>
                 </div>
@@ -441,7 +441,7 @@
                         <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Full dashboard</li>
                         <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Email support</li>
                     </ul>
-                    <button onclick="openModal('signal')" class="w-full py-2.5 rounded border border-graphite text-text-primary font-medium hover:border-signal-cyan hover:text-signal-cyan transition-all">Start 14-Day Trial</button>
+                    <button onclick="subscribe('signal', event)" class="w-full py-2.5 rounded border border-graphite text-text-primary font-medium hover:border-signal-cyan hover:text-signal-cyan transition-all">Start 14-Day Trial</button>
                 </div>
 
                 <!-- Signal Pro -->
@@ -460,7 +460,7 @@
                         <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Slack integration</li>
                         <li class="flex items-start gap-2"><span class="text-signal-cyan mt-0.5">✓</span> Priority support</li>
                     </ul>
-                    <button onclick="openModal('signal_pro')" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)]">Start Free Trial</button>
+                    <button onclick="subscribe('signal_pro', event)" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)]">Start Free Trial</button>
                 </div>
 
                 <!-- Aether Core -->
@@ -478,7 +478,7 @@
                         <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> SSO & audit logs</li>
                         <li class="flex items-start gap-2"><span class="text-purple-400 mt-0.5">✓</span> Dedicated success engineer</li>
                     </ul>
-                    <button onclick="openModal('aether_core')" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Request Demo</button>
+                    <button onclick="requestDemo()" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Request Demo</button>
                 </div>
             </div>
         </div>
@@ -543,7 +543,7 @@
                 <button onclick="openModal('explorer')" class="px-8 py-4 text-base font-semibold rounded bg-signal-cyan text-void hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_30px_rgba(0,240,255,0.3)] w-full sm:w-auto">
                     Establish Link
                 </button>
-                <button onclick="openModal('aether_core')" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
+                <button onclick="requestDemo()" class="px-8 py-4 text-base font-semibold rounded border border-graphite text-text-primary hover:border-signal-cyan hover:text-signal-cyan transition-all w-full sm:w-auto">
                     Request Demo
                 </button>
             </div>
@@ -687,8 +687,8 @@
                         <p class="text-text-primary font-medium mb-1">Free analyses exhausted</p>
                         <p class="text-text-secondary text-sm mb-4">You have used your 2 free scans. Upgrade to continue.</p>
                         <div class="flex flex-col gap-2">
-                            <button onclick="subscribe('signal_pro')" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all">Upgrade to Signal Pro — $99/mo</button>
-                            <button onclick="subscribe('aether_core')" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Contact Aether Core — Custom</button>
+                            <button onclick="subscribe('signal_pro', event)" class="w-full py-2.5 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all">Upgrade to Signal Pro — $99/mo</button>
+                            <button onclick="requestDemo()" class="w-full py-2.5 rounded border border-purple-500/50 text-purple-400 font-medium hover:bg-purple-500/10 transition-all">Contact Aether Core — Custom</button>
                         </div>
                     </div>
                 </div>
@@ -808,6 +808,14 @@
             }
         }
 
+        function goDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function requestDemo() {
+            window.location.href = 'dashboard.html?plan=aether_core';
+        }
+
         function closeModal() {
             const modal = document.getElementById('testModal');
             modal.classList.add('hidden');
@@ -905,7 +913,7 @@
 
                 if (!ingestResponse.ok) {
                     const err = await ingestResponse.json().catch(() => ({}));
-                    throw new Error(err.message || `Ingest failed: ${ingestResponse.statusText}`);
+                    throw new Error(err.detail || err.message || `Ingest failed: ${ingestResponse.statusText}`);
                 }
 
                 const ingestData = await ingestResponse.json();
@@ -923,7 +931,7 @@
 
                 if (!chatResponse.ok) {
                     const err = await chatResponse.json().catch(() => ({}));
-                    throw new Error(err.message || `Analysis failed: ${chatResponse.statusText}`);
+                    throw new Error(err.detail || err.message || `Analysis failed: ${chatResponse.statusText}`);
                 }
 
                 const chatData = await chatResponse.json();
@@ -963,7 +971,12 @@
             const sourcesList = document.getElementById('sourcesList');
             if (sources && sources.length > 0) {
                 sourcesBox.classList.remove('hidden');
-                sourcesList.innerHTML = sources.map(s => `<li class="truncate">• ${s}</li>`).join('');
+                sourcesList.innerHTML = sources.map(s => {
+                    const label = typeof s === 'string'
+                        ? s
+                        : `Chunk ${s.chunk_index ?? '?'} (${Math.round((s.score ?? 0) * 100)}% match)`;
+                    return `<li class="truncate">• ${label}</li>`;
+                }).join('');
             } else {
                 sourcesBox.classList.add('hidden');
             }
@@ -978,7 +991,7 @@
         // ========================
         // Payment — Lemon Squeezy
         // ========================
-        async function subscribe(product) {
+        async function subscribe(product, clickEvent) {
             // Map pricing plan to backend endpoint
             const endpointMap = {
                 'signal':     `${API_BASE}/api/checkout/signal`,
@@ -986,10 +999,11 @@
             };
             const endpoint = endpointMap[product];
             if (!endpoint) { alert('Unknown plan: ' + product); return; }
+            const btn = clickEvent?.currentTarget;
+            const originalText = btn?.textContent;
 
             try {
-                const btn = event && event.currentTarget;
-                if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
+                if (btn) { btn.disabled = true; btn.textContent = 'Redirecting...'; }
 
                 const response = await fetch(endpoint, {
                     method: 'POST',
@@ -1008,8 +1022,7 @@
                 }
             } catch (err) {
                 alert('Payment error: ' + err.message);
-                const btn = event && event.currentTarget;
-                if (btn) { btn.disabled = false; btn.textContent = 'Get Started'; }
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
             }
         }
 
