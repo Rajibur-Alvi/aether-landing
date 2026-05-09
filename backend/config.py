@@ -15,9 +15,8 @@ class Settings(BaseSettings):
     # ── Pinecone ──────────────────────────────────────────────────────────────
     pinecone_api_key: str = ""
     pinecone_index_name: str = "entropy-vectors"
-    # IMPORTANT: Must match the embedding model dimension below.
-    # BAAI/bge-base-en-v1.5 → 768 dims
-    # sentence-transformers/all-MiniLM-L6-v2 → 384 dims (old, worse)
+    # Must match the Pinecone hosted embedding dimension below.
+    # llama-text-embed-v2 supports 768 via Matryoshka embeddings.
     pinecone_dimension: int = 768
 
     # ── Supabase ──────────────────────────────────────────────────────────────
@@ -55,8 +54,8 @@ class Settings(BaseSettings):
     default_max_tokens: int = 1024
     # Fast model by default; users can switch to 70b in Command Center
     default_model: str = "llama-3.1-8b-instant"
-    # Upgraded embedding model — significantly better accuracy than MiniLM
-    embedding_model_name: str = "BAAI/bge-base-en-v1.5"
+    # Hosted embedding model; avoids loading an ONNX model in Render memory.
+    embedding_model_name: str = "llama-text-embed-v2"
     # Minimum cosine similarity score to include a chunk as context
     default_score_threshold: float = 0.65
 

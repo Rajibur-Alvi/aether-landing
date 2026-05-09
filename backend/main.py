@@ -5,18 +5,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from routers import health, chat, ingest, documents, user, public, payment
 from services.pinecone_service import _get_pinecone
-from services.embedding_service import _load_model, get_dimension
+from services.embedding_service import get_dimension
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: preload models and connections. Shutdown: cleanup."""
+    """Startup: verify remote connections. Shutdown: cleanup."""
     settings = get_settings()
 
-    print("⚡ Loading embedding model...")
-    _load_model()
     dim = get_dimension()
-    print(f"✅ Embedding model loaded ({settings.embedding_model_name}, dim={dim})")
+    print(f"✅ Pinecone hosted embeddings configured ({settings.embedding_model_name}, dim={dim})")
 
     print("⚡ Connecting to Pinecone...")
     try:
