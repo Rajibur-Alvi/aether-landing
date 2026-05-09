@@ -5,27 +5,38 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from routers import health, chat, ingest, documents, user, public, payment
 from services.pinecone_service import _get_pinecone
-from services.embedding_service import _load_model
+from services.embedding_service import _load_model, get_dimension
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: preload models and connections. Shutdown: cleanup."""
+    settings = get_settings()
+
     print("⚡ Loading embedding model...")
     _load_model()
-    print("✅ Embedding model loaded (all-MiniLM-L6-v2, dim=384)")
+    dim = get_dimension()
+    print(f"✅ Embedding model loaded ({settings.embedding_model_name}, dim={dim})")
 
     print("⚡ Connecting to Pinecone...")
-    settings = get_settings()
     try:
         pc = _get_pinecone()
         idx = pc.Index(settings.pinecone_index_name)
         stats = idx.describe_index_stats()
-        print(f"✅ Pinecone connected — {stats.get('total_vector_count', 0)} vectors")
+        vec_count = stats.get("total_vector_count", 0)
+        index_dim = stats.get("dimension", 0)
+        if index_dim and index_dim != dim:
+            print(
+                f"⚠️  Pinecone index dimension mismatch! "
+                f"Index={index_dim}, model={dim}. "
+                f"Delete and recreate the index at {dim} dims."
+            )
+        else:
+            print(f"✅ Pinecone connected — {vec_count} vectors, dim={index_dim}")
     except Exception as e:
         print(f"⚠️  Pinecone connection warning: {e}")
 
-    print("🚀 Entropy Backend is live.")
+    print(f"🚀 Entropy Backend is live. CORS origins: {settings.cors_origins}")
     yield
 
     print("🔌 Shutting down...")
@@ -34,13 +45,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="The Entropy Aesthetic — Backend",
     description="High-performance RAG backend with Groq + Pinecone + Supabase",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# ── CORS ──
+# ── CORS ──────────────────────────────────────────────────────────────────────
+# Origins are loaded from the CORS_ORIGINS env var (comma-separated list).
+# Set it on Render to your Vercel URL, e.g.:
+#   CORS_ORIGINS=https://yourapp.vercel.app,https://www.yourapp.com
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
@@ -62,7 +76,7 @@ async def add_entropy_headers(request: Request, call_next):
     return response
 
 
-# ── Register Routers ──
+# ── Register Routers ──────────────────────────────────────────────────────────
 app.include_router(health.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(ingest.router, prefix="/api")
@@ -76,7 +90,7 @@ app.include_router(payment.router, prefix="/api")
 async def root():
     return {
         "name": "The Entropy Aesthetic — Backend",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "status": "operational",
         "docs": "/docs",
     }

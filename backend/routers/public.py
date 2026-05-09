@@ -17,7 +17,7 @@ TEST_USER_ID = "test-user-entropy"
 
 MODEL_MAP = {
     "fast": "llama-3.1-8b-instant",
-    "balanced": "llama-3.3-70b-versatile",
+    "balanced": "llama-3.1-8b-instant",   # free trial always uses fast model
     "thorough": "llama-3.3-70b-versatile",
 }
 
@@ -163,12 +163,11 @@ async def public_ask_question(request: ChatRequest):
     # Free trial limits
     if request.max_tokens and request.max_tokens > 512:
         raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
-    if request.temperature and request.temperature < 0.5:
-        raise HTTPException(status_code=400, detail="Temperature must be at least 0.5 for free trial.")
 
-    model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.3-70b-versatile")
-    temperature = max(request.temperature or 0.7, 0.5)  # Enforce minimum temperature
-    max_tokens = min(request.max_tokens or 1024, 512)  # Limit max tokens
+    model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.1-8b-instant")
+    # Low temperature = accurate factual answers (correct for RAG)
+    temperature = min(request.temperature or 0.1, 0.3)
+    max_tokens = min(request.max_tokens or 512, 512)
     top_k = 3  # Reduced for free trial
 
     # Search Pinecone
@@ -232,12 +231,10 @@ async def public_ask_question_stream(request: ChatRequest):
     # Free trial limits
     if request.max_tokens and request.max_tokens > 512:
         raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
-    if request.temperature and request.temperature < 0.5:
-        raise HTTPException(status_code=400, detail="Temperature must be at least 0.5 for free trial.")
 
-    model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.3-70b-versatile")
-    temperature = max(request.temperature or 0.7, 0.5)  # Enforce minimum temperature
-    max_tokens = min(request.max_tokens or 1024, 512)  # Limit max tokens
+    model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.1-8b-instant")
+    temperature = min(request.temperature or 0.1, 0.3)
+    max_tokens = min(request.max_tokens or 512, 512)
     top_k = 3  # Reduced for free trial
 
     try:
@@ -273,11 +270,12 @@ async def public_ask_question_stream(request: ChatRequest):
             full_content += token
             yield {"event": "token", "data": json.dumps({"content": token})}
 
+        from services.groq_service import calculate_entropy
         yield {
             "event": "done",
             "data": json.dumps({
                 "content_length": len(full_content),
-                "entropy_score": round(min(1.0, len(chunks) * 0.15 + 0.3), 3),
+                "entropy_score": calculate_entropy(full_content),
             }),
         }
 

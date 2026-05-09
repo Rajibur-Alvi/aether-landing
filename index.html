@@ -644,8 +644,14 @@
                         <p id="fileName" class="mt-2 text-xs text-signal-cyan font-mono hidden"></p>
                     </div>
 
+                    <!-- Backend Status -->
+                    <div class="mt-4 flex items-center gap-2">
+                        <span id="backendStatusDot" class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                        <span id="backendStatusText" class="text-xs text-text-muted font-mono">Connecting to backend…</span>
+                    </div>
+
                     <!-- Analyze Button -->
-                    <button id="analyzeBtn" onclick="runAnalysis()" class="mt-6 w-full py-3 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center justify-center gap-2">
+                    <button id="analyzeBtn" onclick="runAnalysis()" disabled class="mt-3 w-full py-3 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                         <span>Analyze</span>
                     </button>
 
@@ -694,6 +700,38 @@
         const API_BASE = 'https://aether-landing.onrender.com';
         let freeUses = parseInt(localStorage.getItem('aether_free_uses')) || 0;
         let currentTab = 'paste';
+        let backendReady = false;
+
+        // ========================
+        // Backend Health Check
+        // ========================
+        async function checkBackendHealth() {
+            const statusDot  = document.getElementById('backendStatusDot');
+            const statusText = document.getElementById('backendStatusText');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+
+            if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
+            if (statusText) statusText.textContent = 'Connecting to backend…';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(12000) });
+                if (res.ok) {
+                    backendReady = true;
+                    if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-green-400';
+                    if (statusText) statusText.textContent = 'Backend online';
+                    if (analyzeBtn && freeUses < 2) analyzeBtn.disabled = false;
+                } else {
+                    throw new Error('Non-OK response');
+                }
+            } catch (e) {
+                backendReady = false;
+                if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-red-500';
+                if (statusText) statusText.textContent = 'Backend warming up (30s) — try again shortly';
+                if (analyzeBtn) analyzeBtn.disabled = true;
+                // Retry once after 20 seconds (Render cold start)
+                setTimeout(checkBackendHealth, 20000);
+            }
+        }
 
         // ========================
         // Mobile Menu
@@ -782,7 +820,8 @@
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('resultState').classList.add('hidden');
             document.getElementById('subscriptionPrompt').classList.add('hidden');
-            document.getElementById('analyzeBtn').disabled = false;
+            // Only re-enable if backend is confirmed alive
+            document.getElementById('analyzeBtn').disabled = !backendReady;
             document.getElementById('textInput').value = '';
             document.getElementById('fileInput').value = '';
             document.getElementById('fileName').classList.add('hidden');
@@ -814,6 +853,10 @@
         async function runAnalysis() {
             if (freeUses >= 2) {
                 document.getElementById('subscriptionPrompt').classList.remove('hidden');
+                return;
+            }
+            if (!backendReady) {
+                showError('Backend is still warming up. Please wait a moment and try again.');
                 return;
             }
 
@@ -933,16 +976,30 @@
         }
 
         // ========================
-        // Payment
+        // Payment — Lemon Squeezy
         // ========================
         async function subscribe(product) {
+            // Map pricing plan to backend endpoint
+            const endpointMap = {
+                'signal':     `${API_BASE}/api/checkout/signal`,
+                'signal_pro': `${API_BASE}/api/checkout/signal-pro`,
+            };
+            const endpoint = endpointMap[product];
+            if (!endpoint) { alert('Unknown plan: ' + product); return; }
+
             try {
-                const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
+                const btn = event && event.currentTarget;
+                if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product })
+                    body: JSON.stringify({})
                 });
-                if (!response.ok) throw new Error('Failed to create checkout session');
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Failed to create checkout');
+                }
                 const result = await response.json();
                 if (result.checkout_url) {
                     window.location.href = result.checkout_url;
@@ -950,7 +1007,9 @@
                     throw new Error('No checkout URL returned');
                 }
             } catch (err) {
-                showError('Payment error: ' + err.message);
+                alert('Payment error: ' + err.message);
+                const btn = event && event.currentTarget;
+                if (btn) { btn.disabled = false; btn.textContent = 'Get Started'; }
             }
         }
 
@@ -960,6 +1019,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             initHeatmap();
             window.addEventListener('resize', initHeatmap);
+            // Disable analyze button until backend is confirmed alive
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            if (analyzeBtn) analyzeBtn.disabled = true;
+            // Run health check immediately
+            checkBackendHealth();
         });
 
         // Close modal on Escape

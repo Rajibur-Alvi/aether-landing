@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether — Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#08080c',
+                        surface: '#0f0f17',
+                        'surface-elevated': '#161622',
+                        'signal-cyan': '#00f0ff',
+                        'signal-purple': '#7c3aed',
+                        'warning-ember': '#ff4d2e',
+                        graphite: '#3a3a4a',
+                        'graphite-light': '#5a5a6e',
+                        'text-primary': '#e8e8ef',
+                        'text-secondary': '#9ca3af',
+                        'text-muted': '#6b7280',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Supabase JS client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #08080c; color: #e8e8ef; font-family: 'Inter', sans-serif; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f17; }
+        ::-webkit-scrollbar-thumb { background: #3a3a4a; border-radius: 3px; }
+
+        .sidebar-link { transition: all 0.15s; }
+        .sidebar-link:hover { background: rgba(0,240,255,0.07); color: #00f0ff; }
+        .sidebar-link.active { background: rgba(0,240,255,0.12); color: #00f0ff; border-left: 2px solid #00f0ff; }
+
+        .card { background: #0f0f17; border: 1px solid #3a3a4a; border-radius: 12px; }
+        .card-elevated { background: #161622; border: 1px solid #3a3a4a; border-radius: 12px; }
+
+        .btn-primary {
+            background: #00f0ff; color: #08080c; font-weight: 600;
+            padding: 0.5rem 1.25rem; border-radius: 8px; border: none;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-primary:hover { box-shadow: 0 0 18px rgba(0,240,255,0.35); opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-ghost {
+            background: transparent; color: #9ca3af; font-weight: 500;
+            padding: 0.5rem 1.25rem; border-radius: 8px;
+            border: 1px solid #3a3a4a; cursor: pointer; transition: all 0.15s;
+        }
+        .btn-ghost:hover { border-color: #00f0ff; color: #00f0ff; }
+
+        .btn-danger {
+            background: rgba(255,77,46,0.15); color: #ff4d2e; font-weight: 500;
+            padding: 0.5rem 1.25rem; border-radius: 8px;
+            border: 1px solid rgba(255,77,46,0.3); cursor: pointer; transition: all 0.15s;
+        }
+        .btn-danger:hover { background: rgba(255,77,46,0.25); }
+
+        .input-field {
+            background: #161622; border: 1px solid #3a3a4a; border-radius: 8px;
+            color: #e8e8ef; padding: 0.625rem 0.875rem; width: 100%;
+            font-family: 'Inter', sans-serif; font-size: 0.875rem;
+            transition: border-color 0.15s; outline: none;
+        }
+        .input-field:focus { border-color: #00f0ff; box-shadow: 0 0 0 2px rgba(0,240,255,0.1); }
+
+        .chat-bubble-user {
+            background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 12px 12px 4px 12px; padding: 0.75rem 1rem;
+            margin-left: auto; max-width: 80%;
+        }
+        .chat-bubble-ai {
+            background: #161622; border: 1px solid #3a3a4a;
+            border-radius: 12px 12px 12px 4px; padding: 0.75rem 1rem;
+            max-width: 85%;
+        }
+
+        .doc-card { transition: border-color 0.15s; }
+        .doc-card:hover { border-color: rgba(0,240,255,0.4); }
+
+        .spinner {
+            border: 2px solid #3a3a4a; border-top-color: #00f0ff;
+            border-radius: 50%; width: 20px; height: 20px; animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .tab-btn { transition: all 0.15s; }
+        .tab-btn.active { color: #00f0ff; border-bottom: 2px solid #00f0ff; }
+
+        .entropy-bar {
+            height: 6px; border-radius: 3px; background: #3a3a4a; overflow: hidden;
+        }
+        .entropy-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+        /* Auth overlay */
+        #authOverlay { backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- ═══════════════════════════════════════════════════════════
+     AUTH OVERLAY — shown when user is not logged in
+════════════════════════════════════════════════════════════ -->
+<div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-void/90">
+    <div class="card w-full max-w-md mx-4 p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-signal-cyan font-mono tracking-wider">AETHER</h1>
+            <p class="text-text-muted text-sm mt-1">Sign in to your account</p>
+        </div>
+
+        <!-- Tab switcher -->
+        <div class="flex border-b border-graphite mb-6">
+            <button onclick="switchAuthTab('signin')" id="tabSignin"
+                class="tab-btn active flex-1 pb-3 text-sm font-medium text-center">Sign In</button>
+            <button onclick="switchAuthTab('signup')" id="tabSignup"
+                class="tab-btn flex-1 pb-3 text-sm font-medium text-center text-text-muted">Create Account</button>
+        </div>
+
+        <div id="authError" class="hidden mb-4 p-3 rounded-lg bg-red-900/30 border border-red-700/50 text-red-400 text-sm"></div>
+
+        <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-text-muted mb-1.5">Email</label>
+                <input id="authEmail" type="email" class="input-field" placeholder="you@example.com" required>
+            </div>
+            <div>
+                <label class="block text-xs text-text-muted mb-1.5">Password</label>
+                <input id="authPassword" type="password" class="input-field" placeholder="••••••••" required minlength="6">
+            </div>
+            <button type="submit" id="authSubmitBtn" class="btn-primary w-full py-2.5 text-sm">
+                Sign In
+            </button>
+        </form>
+
+        <p class="text-center mt-4 text-text-muted text-xs">
+            <a href="/" class="text-signal-cyan hover:underline">← Back to landing page</a>
+        </p>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN DASHBOARD LAYOUT
+════════════════════════════════════════════════════════════ -->
+<div id="appShell" class="hidden flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-56 flex-shrink-0 border-r border-graphite flex flex-col" style="background:#08080c">
+        <div class="px-5 py-5 border-b border-graphite">
+            <span class="text-signal-cyan font-mono font-bold text-lg tracking-widest">AETHER</span>
+            <div class="flex items-center gap-1.5 mt-1">
+                <span id="planBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-graphite text-text-muted">EXPLORER</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <button onclick="showSection('documents')" id="navDocuments"
+                class="sidebar-link active w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-primary">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Documents
+            </button>
+            <button onclick="showSection('chat')" id="navChat"
+                class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                Chat
+            </button>
+            <button onclick="showSection('upload')" id="navUpload"
+                class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Upload
+            </button>
+            <button onclick="showSection('settings')" id="navSettings"
+                class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+            </button>
+        </nav>
+
+        <div class="px-3 py-4 border-t border-graphite">
+            <div class="flex items-center gap-2 px-2 mb-3">
+                <div class="w-7 h-7 rounded-full bg-signal-purple/30 border border-signal-purple/50 flex items-center justify-center text-xs font-bold text-signal-cyan">
+                    <span id="userInitial">?</span>
+                </div>
+                <div class="overflow-hidden">
+                    <p id="userEmail" class="text-xs text-text-primary truncate">Loading...</p>
+                </div>
+            </div>
+            <button onclick="signOut()" class="btn-ghost w-full text-xs py-2">Sign Out</button>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 overflow-y-auto" style="background:#0a0a12">
+
+        <!-- ── DOCUMENTS ── -->
+        <section id="sectionDocuments" class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-text-primary">Documents</h2>
+                    <p class="text-sm text-text-muted mt-0.5">Your indexed document library</p>
+                </div>
+                <button onclick="showSection('upload')" class="btn-primary text-sm">+ Upload Document</button>
+            </div>
+
+            <div id="docsLoading" class="flex items-center gap-3 text-text-muted py-8">
+                <div class="spinner"></div>
+                <span class="text-sm">Loading documents…</span>
+            </div>
+            <div id="docsEmpty" class="hidden text-center py-16">
+                <div class="text-5xl mb-4">📄</div>
+                <p class="text-text-secondary font-medium">No documents yet</p>
+                <p class="text-text-muted text-sm mt-1">Upload a document to get started</p>
+                <button onclick="showSection('upload')" class="btn-primary mt-4 text-sm">Upload Your First Document</button>
+            </div>
+            <div id="docsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- ── CHAT ── -->
+        <section id="sectionChat" class="hidden flex flex-col h-full">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-graphite flex-shrink-0">
+                <div>
+                    <h2 class="text-xl font-semibold text-text-primary">Chat</h2>
+                    <p class="text-sm text-text-muted mt-0.5">Ask questions about your documents</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="chatDocFilter" class="input-field text-xs py-1.5 w-44">
+                        <option value="">All documents</option>
+                    </select>
+                    <button onclick="clearChat()" class="btn-ghost text-xs py-2">Clear Chat</button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
+                <div class="text-center py-12">
+                    <p class="text-4xl mb-3">🔮</p>
+                    <p class="text-text-secondary font-medium">Ask anything about your documents</p>
+                    <p class="text-text-muted text-sm mt-1">The AI will search your indexed content for answers</p>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="px-6 py-4 border-t border-graphite flex-shrink-0">
+                <div id="chatError" class="hidden mb-3 p-3 rounded-lg bg-red-900/20 border border-red-800/40 text-red-400 text-sm"></div>
+                <div class="flex gap-3">
+                    <input id="chatInput" type="text" class="input-field flex-1"
+                        placeholder="Ask a question about your documents…"
+                        onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChat();}">
+                    <button onclick="sendChat()" id="chatSendBtn" class="btn-primary px-5 text-sm flex items-center gap-2">
+                        <span>Send</span>
+                    </button>
+                </div>
+                <p class="text-text-muted text-xs mt-2">Press Enter to send · Only searches your uploaded documents</p>
+            </div>
+        </section>
+
+        <!-- ── UPLOAD ── -->
+        <section id="sectionUpload" class="hidden p-6 max-w-2xl">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-text-primary">Upload Document</h2>
+                <p class="text-sm text-text-muted mt-0.5">Supported: .txt and .pdf files</p>
+            </div>
+
+            <div class="card p-6 space-y-5">
+                <!-- Drop zone -->
+                <div id="dropZone"
+                    class="border-2 border-dashed border-graphite rounded-xl p-10 text-center cursor-pointer transition-all hover:border-signal-cyan/50"
+                    onclick="document.getElementById('uploadFile').click()"
+                    ondragover="event.preventDefault();this.classList.add('border-signal-cyan/60')"
+                    ondragleave="this.classList.remove('border-signal-cyan/60')"
+                    ondrop="handleDrop(event)">
+                    <p class="text-4xl mb-3">📂</p>
+                    <p class="text-text-secondary font-medium">Drop file here or click to browse</p>
+                    <p class="text-text-muted text-sm mt-1">PDF or TXT · Max 10 MB</p>
+                    <input id="uploadFile" type="file" accept=".txt,.pdf" class="hidden" onchange="onFileSelected()">
+                </div>
+
+                <div id="selectedFile" class="hidden flex items-center gap-3 p-3 rounded-lg bg-surface-elevated border border-graphite">
+                    <span class="text-2xl">📄</span>
+                    <div class="flex-1 min-w-0">
+                        <p id="selectedFileName" class="text-sm font-medium text-text-primary truncate"></p>
+                        <p id="selectedFileSize" class="text-xs text-text-muted"></p>
+                    </div>
+                    <button onclick="clearFileSelection()" class="text-text-muted hover:text-warning-ember text-lg leading-none">×</button>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-text-muted mb-1.5">Document Title</label>
+                    <input id="uploadTitle" type="text" class="input-field" placeholder="Give this document a name…">
+                </div>
+
+                <div id="uploadProgress" class="hidden">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="spinner"></div>
+                        <span id="uploadStatus" class="text-sm text-text-secondary">Uploading and indexing…</span>
+                    </div>
+                    <div class="entropy-bar">
+                        <div id="uploadProgressBar" class="entropy-fill bg-signal-cyan" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div id="uploadSuccess" class="hidden p-4 rounded-lg bg-green-900/20 border border-green-700/40 text-green-400 text-sm"></div>
+                <div id="uploadError" class="hidden p-4 rounded-lg bg-red-900/20 border border-red-800/40 text-red-400 text-sm"></div>
+
+                <button onclick="uploadDocument()" id="uploadBtn" class="btn-primary w-full py-2.5 text-sm">
+                    Index Document
+                </button>
+            </div>
+        </section>
+
+        <!-- ── SETTINGS ── -->
+        <section id="sectionSettings" class="hidden p-6 max-w-2xl space-y-6">
+            <div class="mb-2">
+                <h2 class="text-xl font-semibold text-text-primary">Settings</h2>
+                <p class="text-sm text-text-muted mt-0.5">Configure your AI inference preferences</p>
+            </div>
+
+            <!-- Subscription -->
+            <div class="card p-5">
+                <h3 class="font-semibold text-text-primary mb-3">Subscription</h3>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-secondary">Current plan: <span id="currentPlan" class="text-signal-cyan font-mono font-semibold">Explorer (Free)</span></p>
+                        <p class="text-xs text-text-muted mt-0.5">Upgrade to unlock more queries and larger document limits</p>
+                    </div>
+                    <button onclick="upgradePlan()" class="btn-primary text-sm">Upgrade</button>
+                </div>
+            </div>
+
+            <!-- Model Settings -->
+            <div class="card p-5">
+                <h3 class="font-semibold text-text-primary mb-4">AI Model Settings</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-text-muted mb-1.5">Inference Speed</label>
+                        <select id="settingSpeed" class="input-field text-sm">
+                            <option value="fast">Fast — llama-3.1-8b (recommended)</option>
+                            <option value="balanced">Balanced — llama-3.3-70b</option>
+                            <option value="thorough">Thorough — llama-3.3-70b (max quality)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-text-muted mb-1.5">Temperature — <span id="tempVal">0.1</span></label>
+                        <input type="range" id="settingTemp" min="0" max="1" step="0.05" value="0.1"
+                            oninput="document.getElementById('tempVal').textContent=parseFloat(this.value).toFixed(2)"
+                            class="w-full accent-signal-cyan">
+                        <div class="flex justify-between text-xs text-text-muted mt-1">
+                            <span>0.0 Precise</span><span>1.0 Creative</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-text-muted mb-1.5">Max Tokens</label>
+                        <select id="settingMaxTokens" class="input-field text-sm">
+                            <option value="512">512 — Short answers</option>
+                            <option value="1024" selected>1024 — Standard</option>
+                            <option value="2048">2048 — Detailed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-text-muted mb-1.5">Custom System Prompt (optional)</label>
+                        <textarea id="settingSystemPrompt" class="input-field text-sm" rows="3"
+                            placeholder="Leave blank to use the default Entropy AI prompt…"></textarea>
+                    </div>
+                    <button onclick="saveSettings()" class="btn-primary text-sm">Save Settings</button>
+                    <div id="settingsSaved" class="hidden text-green-400 text-sm">✓ Settings saved</div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card p-5 border-warning-ember/20">
+                <h3 class="font-semibold text-warning-ember mb-3">Danger Zone</h3>
+                <p class="text-sm text-text-muted mb-4">These actions cannot be undone.</p>
+                <button onclick="confirmSignOut()" class="btn-danger text-sm">Sign Out of All Sessions</button>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const API_BASE      = 'https://aether-landing.onrender.com';
+const SUPABASE_URL  = 'https://sjvlmbtiqthbvyokucje.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_4VYlINe-Wo7lzGrb1P_liw_53viDuye';
+
+// ── Supabase client ───────────────────────────────────────────────────────────
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentUser   = null;
+let authToken     = null;
+let currentSection = 'documents';
+let documents     = [];
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+let currentAuthMode = 'signin';
+
+function switchAuthTab(mode) {
+    currentAuthMode = mode;
+    document.getElementById('tabSignin').classList.toggle('active', mode === 'signin');
+    document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
+    document.getElementById('tabSignin').classList.toggle('text-text-muted', mode !== 'signin');
+    document.getElementById('tabSignup').classList.toggle('text-text-muted', mode !== 'signup');
+    document.getElementById('authSubmitBtn').textContent = mode === 'signin' ? 'Sign In' : 'Create Account';
+    document.getElementById('authError').classList.add('hidden');
+}
+
+async function handleAuth(e) {
+    e.preventDefault();
+    const email    = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const btn      = document.getElementById('authSubmitBtn');
+    const errEl    = document.getElementById('authError');
+
+    errEl.classList.add('hidden');
+    btn.disabled = true;
+    btn.textContent = 'Please wait…';
+
+    try {
+        let result;
+        if (currentAuthMode === 'signin') {
+            result = await sb.auth.signInWithPassword({ email, password });
+        } else {
+            result = await sb.auth.signUp({ email, password });
+        }
+        if (result.error) throw result.error;
+        if (currentAuthMode === 'signup' && !result.data.session) {
+            errEl.textContent = 'Check your email to confirm your account, then sign in.';
+            errEl.classList.remove('hidden');
+            errEl.style.color = '#34d399';
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+            return;
+        }
+        // Session obtained — boot the app
+        await onSessionReady(result.data.session);
+    } catch (err) {
+        errEl.textContent = err.message || 'Authentication failed';
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = currentAuthMode === 'signin' ? 'Sign In' : 'Create Account';
+    }
+}
+
+async function onSessionReady(session) {
+    if (!session) return;
+    currentUser = session.user;
+    authToken   = session.access_token;
+
+    // Update UI
+    document.getElementById('userEmail').textContent   = currentUser.email || '';
+    document.getElementById('userInitial').textContent = (currentUser.email || '?')[0].toUpperCase();
+
+    // Hide auth overlay, show app
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    document.getElementById('appShell').classList.add('flex');
+
+    // Handle payment success redirect
+    if (window.location.search.includes('payment=success')) {
+        showToast('Payment successful! Welcome to Aether.');
+        window.history.replaceState({}, '', '/dashboard.html');
+    }
+
+    // Load data
+    loadDocuments();
+    loadSettings();
+    loadUserPlan();
+}
+
+async function signOut() {
+    await sb.auth.signOut();
+    currentUser = null; authToken = null;
+    document.getElementById('appShell').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('flex');
+    document.getElementById('authOverlay').classList.remove('hidden');
+}
+
+function confirmSignOut() {
+    if (confirm('Sign out of all sessions?')) signOut();
+}
+
+// ── Section navigation ────────────────────────────────────────────────────────
+const sections = ['documents', 'chat', 'upload', 'settings'];
+
+function showSection(name) {
+    currentSection = name;
+    sections.forEach(s => {
+        document.getElementById('section' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
+        const navEl = document.getElementById('nav' + s.charAt(0).toUpperCase() + s.slice(1));
+        if (navEl) navEl.classList.remove('active');
+    });
+    const activeSection = document.getElementById('section' + name.charAt(0).toUpperCase() + name.slice(1));
+    activeSection.classList.remove('hidden');
+    if (name === 'chat') activeSection.classList.add('flex', 'flex-col');
+    const activeNav = document.getElementById('nav' + name.charAt(0).toUpperCase() + name.slice(1));
+    if (activeNav) activeNav.classList.add('active');
+
+    if (name === 'documents') loadDocuments();
+}
+
+// ── API helper ────────────────────────────────────────────────────────────────
+async function apiFetch(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+        },
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || err.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+async function loadDocuments() {
+    document.getElementById('docsLoading').classList.remove('hidden');
+    document.getElementById('docsList').innerHTML = '';
+    document.getElementById('docsEmpty').classList.add('hidden');
+
+    try {
+        const data = await apiFetch('/api/documents');
+        documents = data.documents || data || [];
+        renderDocuments();
+        populateChatDocFilter();
+    } catch (e) {
+        document.getElementById('docsLoading').classList.add('hidden');
+        document.getElementById('docsList').innerHTML =
+            `<div class="col-span-3 text-red-400 text-sm py-4">${e.message}</div>`;
+    }
+}
+
+function renderDocuments() {
+    document.getElementById('docsLoading').classList.add('hidden');
+    const list = document.getElementById('docsList');
+    if (!documents.length) {
+        document.getElementById('docsEmpty').classList.remove('hidden');
+        return;
+    }
+    list.innerHTML = documents.map(doc => {
+        const chunks  = doc.chunk_count || 0;
+        const size    = doc.file_size ? formatBytes(doc.file_size) : '—';
+        const type    = (doc.file_type || 'txt').toUpperCase();
+        const created = doc.created_at ? new Date(doc.created_at).toLocaleDateString() : '';
+        const statusColor = doc.status === 'indexed' ? 'text-green-400' : 'text-yellow-400';
+        return `
+            <div class="card doc-card p-4 flex flex-col gap-3">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xl flex-shrink-0">${type === 'PDF' ? '📕' : '📄'}</span>
+                        <div class="min-w-0">
+                            <p class="font-medium text-text-primary text-sm truncate">${escHtml(doc.title || doc.filename || 'Untitled')}</p>
+                            <p class="text-xs text-text-muted">${type} · ${size} · ${created}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs ${statusColor} font-mono flex-shrink-0">${doc.status || 'indexed'}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-text-muted">
+                    <span>${chunks} chunks indexed</span>
+                    <div class="flex gap-2">
+                        <button onclick="chatWithDoc('${doc.id}')"
+                            class="text-signal-cyan hover:underline">Chat</button>
+                        <button onclick="deleteDocument('${doc.id}', this)"
+                            class="text-warning-ember hover:underline">Delete</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+async function deleteDocument(docId, btn) {
+    if (!confirm('Delete this document? This cannot be undone.')) return;
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+        await apiFetch(`/api/documents/${docId}`, { method: 'DELETE' });
+        documents = documents.filter(d => d.id !== docId);
+        renderDocuments();
+        populateChatDocFilter();
+    } catch (e) {
+        alert('Delete failed: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+    }
+}
+
+function chatWithDoc(docId) {
+    showSection('chat');
+    document.getElementById('chatDocFilter').value = docId;
+}
+
+function populateChatDocFilter() {
+    const sel = document.getElementById('chatDocFilter');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All documents</option>' +
+        documents.map(d =>
+            `<option value="${d.id}">${escHtml(d.title || d.filename || d.id.slice(0,8))}</option>`
+        ).join('');
+    if (current) sel.value = current;
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+let selectedFile = null;
+
+function onFileSelected() {
+    const input = document.getElementById('uploadFile');
+    selectedFile = input.files[0] || null;
+    updateFileUI();
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('border-signal-cyan/60');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    selectedFile = file;
+    updateFileUI();
+}
+
+function updateFileUI() {
+    if (!selectedFile) return;
+    document.getElementById('selectedFile').classList.remove('hidden');
+    document.getElementById('selectedFileName').textContent = selectedFile.name;
+    document.getElementById('selectedFileSize').textContent = formatBytes(selectedFile.size);
+    if (!document.getElementById('uploadTitle').value) {
+        document.getElementById('uploadTitle').value = selectedFile.name.replace(/\.[^.]+$/, '');
+    }
+}
+
+function clearFileSelection() {
+    selectedFile = null;
+    document.getElementById('uploadFile').value = '';
+    document.getElementById('selectedFile').classList.add('hidden');
+}
+
+async function uploadDocument() {
+    if (!selectedFile) { alert('Please select a file first.'); return; }
+    const title = document.getElementById('uploadTitle').value.trim() || selectedFile.name;
+
+    const btn = document.getElementById('uploadBtn');
+    const progress = document.getElementById('uploadProgress');
+    const bar = document.getElementById('uploadProgressBar');
+    const statusEl = document.getElementById('uploadStatus');
+    const successEl = document.getElementById('uploadSuccess');
+    const errEl = document.getElementById('uploadError');
+
+    btn.disabled = true;
+    progress.classList.remove('hidden');
+    successEl.classList.add('hidden');
+    errEl.classList.add('hidden');
+
+    try {
+        // Step 1 — upload & ingest
+        statusEl.textContent = 'Uploading and parsing document…';
+        bar.style.width = '30%';
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('title', title);
+        const res = await fetch(`${API_BASE}/api/ingest/file`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` },
+            body: formData,
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `Upload failed: ${res.status}`);
+        }
+        bar.style.width = '70%';
+        statusEl.textContent = 'Embedding chunks into vector database…';
+        const data = await res.json();
+        bar.style.width = '100%';
+
+        successEl.textContent = `✓ "${title}" indexed into ${data.chunk_count} chunks. Ready to chat!`;
+        successEl.classList.remove('hidden');
+        clearFileSelection();
+        document.getElementById('uploadTitle').value = '';
+        loadDocuments();
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        progress.classList.add('hidden');
+        bar.style.width = '0%';
+    }
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+let chatHistory = [];
+
+function clearChat() {
+    chatHistory = [];
+    document.getElementById('chatMessages').innerHTML = `
+        <div class="text-center py-12">
+            <p class="text-4xl mb-3">🔮</p>
+            <p class="text-text-secondary font-medium">Ask anything about your documents</p>
+            <p class="text-text-muted text-sm mt-1">The AI will search your indexed content for answers</p>
+        </div>`;
+    document.getElementById('chatError').classList.add('hidden');
+}
+
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg   = input.value.trim();
+    if (!msg) return;
+    const docId = document.getElementById('chatDocFilter').value || null;
+    const errEl = document.getElementById('chatError');
+
+    errEl.classList.add('hidden');
+    input.value = '';
+    appendChatMessage('user', msg);
+
+    const btn = document.getElementById('chatSendBtn');
+    btn.disabled = true;
+    const thinkingId = appendThinking();
+
+    try {
+        const body = { message: msg };
+        if (docId) body.document_id = docId;
+
+        const data = await apiFetch('/api/chat/ask', {
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+
+        removeThinking(thinkingId);
+        const content = data.content || data.message || 'No response.';
+        const entropy = data.meta?.entropy_score ?? null;
+        const latency = data.meta?.latency_ms ?? null;
+        appendChatMessage('assistant', content, entropy, latency);
+        chatHistory.push({ role: 'user', content: msg });
+        chatHistory.push({ role: 'assistant', content });
+    } catch (e) {
+        removeThinking(thinkingId);
+        errEl.textContent = 'Error: ' + e.message;
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        input.focus();
+    }
+}
+
+function appendChatMessage(role, content, entropyScore, latencyMs) {
+    const box = document.getElementById('chatMessages');
+    // Remove empty state placeholder
+    const placeholder = box.querySelector('.text-center.py-12');
+    if (placeholder) placeholder.remove();
+
+    const el = document.createElement('div');
+    el.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+    const entropyBadge = (entropyScore != null)
+        ? `<span class="text-xs font-mono text-signal-cyan/70 ml-2">entropy ${(entropyScore * 100).toFixed(1)}</span>`
+        : '';
+    const latencyBadge = (latencyMs != null)
+        ? `<span class="text-xs text-text-muted ml-1">${latencyMs}ms</span>`
+        : '';
+
+    el.innerHTML = role === 'user'
+        ? `<div class="chat-bubble-user text-sm text-text-primary">${escHtml(content)}</div>`
+        : `<div>
+               <div class="chat-bubble-ai text-sm text-text-primary whitespace-pre-wrap">${escHtml(content)}</div>
+               <div class="flex items-center mt-1 px-1">${entropyBadge}${latencyBadge}</div>
+           </div>`;
+
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+}
+
+function appendThinking() {
+    const id  = 'thinking-' + Date.now();
+    const box = document.getElementById('chatMessages');
+    const el  = document.createElement('div');
+    el.id = id;
+    el.className = 'flex justify-start';
+    el.innerHTML = `<div class="chat-bubble-ai flex items-center gap-2">
+        <div class="spinner w-4 h-4"></div>
+        <span class="text-sm text-text-muted">Thinking…</span>
+    </div>`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+    return id;
+}
+
+function removeThinking(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+async function loadSettings() {
+    try {
+        const data = await apiFetch('/api/user/command-center');
+        if (data.inference_speed) document.getElementById('settingSpeed').value = data.inference_speed;
+        if (data.temperature != null) {
+            document.getElementById('settingTemp').value = data.temperature;
+            document.getElementById('tempVal').textContent = parseFloat(data.temperature).toFixed(2);
+        }
+        if (data.max_tokens) document.getElementById('settingMaxTokens').value = data.max_tokens;
+        if (data.system_prompt) document.getElementById('settingSystemPrompt').value = data.system_prompt;
+    } catch (e) {
+        // Non-fatal — user can still update settings
+    }
+}
+
+async function saveSettings() {
+    const body = {
+        inference_speed: document.getElementById('settingSpeed').value,
+        temperature: parseFloat(document.getElementById('settingTemp').value),
+        max_tokens: parseInt(document.getElementById('settingMaxTokens').value),
+        system_prompt: document.getElementById('settingSystemPrompt').value || null,
+    };
+    try {
+        await apiFetch('/api/user/command-center', { method: 'PATCH', body: JSON.stringify(body) });
+        const saved = document.getElementById('settingsSaved');
+        saved.classList.remove('hidden');
+        setTimeout(() => saved.classList.add('hidden'), 3000);
+    } catch (e) {
+        alert('Failed to save settings: ' + e.message);
+    }
+}
+
+async function loadUserPlan() {
+    try {
+        const data = await apiFetch('/api/user/profile');
+        const plan = data.plan || 'explorer';
+        const planNames = { explorer: 'Explorer (Free)', signal: 'Signal', signal_pro: 'Signal Pro' };
+        const label = planNames[plan] || plan;
+        document.getElementById('currentPlan').textContent = label;
+        document.getElementById('planBadge').textContent   = plan.toUpperCase().replace('_', ' ');
+        if (plan !== 'explorer') {
+            document.getElementById('planBadge').className = 'text-xs font-mono px-2 py-0.5 rounded bg-signal-cyan/20 text-signal-cyan';
+        }
+    } catch (e) {
+        // Non-fatal
+    }
+}
+
+async function upgradePlan() {
+    // Open Signal plan checkout ($29/mo)
+    try {
+        const data = await fetch(`${API_BASE}/api/checkout/signal`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: currentUser?.email }),
+        }).then(r => r.json());
+        if (data.checkout_url) window.location.href = data.checkout_url;
+    } catch (e) {
+        alert('Could not start checkout: ' + e.message);
+    }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'fixed bottom-6 right-6 bg-green-800/90 text-green-200 px-4 py-3 rounded-lg text-sm z-50 border border-green-700';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+        await onSessionReady(session);
+    }
+    // Keep token fresh
+    sb.auth.onAuthStateChange((_event, session) => {
+        if (session) {
+            authToken   = session.access_token;
+            currentUser = session.user;
+        } else {
+            signOut();
+        }
+    });
+})();
+</script>
+</body>
+</html>

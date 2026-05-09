@@ -6,6 +6,11 @@ from services.embedding_service import get_embeddings, get_single_embedding
 _pc: Pinecone | None = None
 _index = None
 
+# Minimum cosine similarity score for a chunk to be used as context.
+# Chunks below this threshold are discarded — they are not relevant enough
+# to the query and would only add noise to the LLM prompt.
+SCORE_THRESHOLD = 0.65
+
 
 def _get_pinecone():
     """Initialize and return Pinecone client (singleton)."""
@@ -57,7 +62,7 @@ async def upsert_document_chunks(
     index = _get_index()
     batch_size = 100
     for i in range(0, len(vectors), batch_size):
-        batch = vectors[i : i + batch_size]
+        batch = vectors[i: i + batch_size]
         await asyncio.to_thread(index.upsert, vectors=batch)
 
     return len(vectors)
@@ -68,43 +73,51 @@ async def search_similar_chunks(
     user_id: str,
     top_k: int = 5,
     document_id: str | None = None,
+    score_threshold: float = SCORE_THRESHOLD,
 ) -> list[dict]:
     """
     Embed the query and search Pinecone for similar chunks.
-    Returns list of dicts with text, score, document_id, chunk_index.
+    Only returns chunks whose cosine similarity meets score_threshold.
+    Returns list of dicts: {text, score, document_id, chunk_index}.
     """
     query_embedding = await get_single_embedding(query)
 
-    filter_dict = {"user_id": user_id}
+    filter_dict: dict = {"user_id": user_id}
     if document_id:
         filter_dict["document_id"] = document_id
 
     index = _get_index()
+    # Request more than top_k so we have candidates to filter by threshold
+    raw_top_k = min(top_k * 2, 20)
     results = await asyncio.to_thread(
         index.query,
         vector=query_embedding,
-        top_k=top_k,
+        top_k=raw_top_k,
         filter=filter_dict,
         include_metadata=True,
     )
 
     matches = []
     for match in results.get("matches", []):
+        score = match.get("score", 0.0)
+        # Skip chunks that are not similar enough to the query
+        if score < score_threshold:
+            continue
         meta = match.get("metadata", {})
         matches.append({
             "text": meta.get("chunk_text", ""),
             "document_id": meta.get("document_id", ""),
             "chunk_index": meta.get("chunk_index", 0),
-            "score": match.get("score", 0.0),
+            "score": score,
         })
+        if len(matches) >= top_k:
+            break
 
     return matches
 
 
 async def delete_document_chunks(document_id: str) -> int:
-    """
-    Delete all chunks for a given document from Pinecone.
-    """
+    """Delete all chunks for a given document from Pinecone."""
     index = _get_index()
     await asyncio.to_thread(
         index.delete,

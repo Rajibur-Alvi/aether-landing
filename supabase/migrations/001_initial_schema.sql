@@ -8,12 +8,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ── 1. USER PROFILES ──
 CREATE TABLE IF NOT EXISTS public.user_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT,
     username TEXT UNIQUE,
     full_name TEXT,
     avatar_url TEXT,
     entropy_level INTEGER DEFAULT 50 CHECK (entropy_level >= 0 AND entropy_level <= 100),
     ghost_mode BOOLEAN DEFAULT FALSE,
     theme TEXT DEFAULT 'entropy' CHECK (theme IN ('entropy', 'ghost', 'void')),
+    -- Subscription / billing fields (written by Lemon Squeezy webhook)
+    plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'signal', 'signal_pro')),
+    subscription_status TEXT DEFAULT 'inactive'
+        CHECK (subscription_status IN ('active', 'inactive', 'cancelled', 'expired', 'paused', 'past_due', 'unpaid')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -21,7 +26,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.user_profiles (id) VALUES (NEW.id);
+    INSERT INTO public.user_profiles (id, email)
+    VALUES (NEW.id, NEW.email)
+    ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -128,6 +135,9 @@ CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON public.messages(conve
 CREATE INDEX IF NOT EXISTS idx_dark_data_events_user_id ON public.dark_data_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_dark_data_events_type ON public.dark_data_events(event_type);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages(created_at DESC);
+-- Used by the Lemon Squeezy webhook to find a user by email
+CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_plan ON public.user_profiles(plan);
 
 -- ── 8. AUTO-UPDATE updated_at TRIGGER ──
 CREATE OR REPLACE FUNCTION public.update_updated_at()
