@@ -85,11 +85,53 @@ def _split_long_section(text: str, chunk_size: int, chunk_overlap: int) -> list[
         else:
             if current:
                 chunks.append(current)
+                current = ""
+            if len(sentence) > chunk_size:
+                sub_chunks = _split_by_length(sentence, chunk_size, chunk_overlap)
+                if sub_chunks:
+                    chunks.extend(sub_chunks[:-1])
+                    current = sub_chunks[-1]
+                continue
             if chunk_overlap > 0 and current:
                 overlap = _get_overlap(current, chunk_overlap)
                 current = (overlap + " " + sentence).strip()
             else:
                 current = sentence
+
+    if current:
+        chunks.append(current)
+
+    return chunks
+
+
+def _split_by_length(text: str, chunk_size: int, chunk_overlap: int) -> list[str]:
+    """Split text that has no usable sentence boundaries."""
+    words = text.split()
+    if not words:
+        return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+
+    chunks: list[str] = []
+    current = ""
+
+    for word in words:
+        if len(word) > chunk_size:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.extend(word[i:i + chunk_size] for i in range(0, len(word), chunk_size))
+            continue
+
+        candidate = (current + " " + word).strip()
+        if len(candidate) <= chunk_size:
+            current = candidate
+            continue
+
+        if current:
+            chunks.append(current)
+            overlap = _get_overlap(current, chunk_overlap) if chunk_overlap > 0 else ""
+            current = (overlap + " " + word).strip() if overlap else word
+        else:
+            current = word
 
     if current:
         chunks.append(current)
