@@ -25,12 +25,20 @@ class LandingCtaTest(unittest.TestCase):
         self.assertIn("function requestDemo()", self.html)
         self.assertIn("requestDemo()", self.html)
 
+    def test_public_chat_request_uses_free_trial_token_limit(self):
+        self.assertIn("max_tokens: 512", self.html)
+
 
 class PublicFreeScanTest(unittest.TestCase):
     def test_public_ingest_does_not_write_auth_user_metadata(self):
         source = (ROOT / "backend" / "routers" / "public.py").read_text()
         self.assertNotIn("Metadata storage failed", source)
         self.assertNotIn('sb.table("documents").upsert', source)
+
+    def test_public_chat_caps_tokens_instead_of_rejecting_schema_default(self):
+        source = (ROOT / "backend" / "routers" / "public.py").read_text()
+        self.assertNotIn("Max tokens limited to 512 for free trial.", source)
+        self.assertGreaterEqual(source.count("max_tokens = min(request.max_tokens or 512, 512)"), 2)
 
 
 if __name__ == "__main__":

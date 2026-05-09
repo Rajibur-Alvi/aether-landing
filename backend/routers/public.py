@@ -130,10 +130,6 @@ async def public_ask_question(request: ChatRequest):
     settings = get_settings()
     start = time.perf_counter()
 
-    # Free trial limits
-    if request.max_tokens and request.max_tokens > 512:
-        raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
-
     model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.1-8b-instant")
     # Low temperature = accurate factual answers (correct for RAG)
     temperature = min(request.temperature or 0.1, 0.3)
@@ -197,10 +193,6 @@ async def public_ask_question(request: ChatRequest):
 async def public_ask_question_stream(request: ChatRequest):
     """Public streaming RAG endpoint for free trials. Limited functionality."""
     settings = get_settings()
-
-    # Free trial limits
-    if request.max_tokens and request.max_tokens > 512:
-        raise HTTPException(status_code=400, detail="Max tokens limited to 512 for free trial.")
 
     model_name = MODEL_MAP.get(request.model.value if request.model else "balanced", "llama-3.1-8b-instant")
     temperature = min(request.temperature or 0.1, 0.3)

@@ -925,7 +925,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: 'Analyze the entropy and data patterns of this document. Provide an entropy score from 0-100 and a brief summary.',
-                        document_id: docId
+                        document_id: docId,
+                        max_tokens: 512
                     })
                 });
 
