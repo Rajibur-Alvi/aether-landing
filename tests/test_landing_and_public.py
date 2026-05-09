@@ -31,6 +31,18 @@ class LandingCtaTest(unittest.TestCase):
     def test_public_upload_picker_accepts_docx(self):
         self.assertIn('accept=".txt,.pdf,.docx"', self.html)
 
+    def test_public_analyzer_is_not_blocked_by_local_storage_usage_count(self):
+        self.assertNotIn("aether_free_uses", self.html)
+        self.assertNotIn("freeUses >= 2", self.html)
+        self.assertNotIn("textInput').disabled = true", self.html)
+        self.assertNotIn("fileInput').disabled = true", self.html)
+        self.assertNotIn("analyzeBtn').classList.add('hidden')", self.html)
+
+    def test_public_analyzer_is_not_blocked_by_deep_health_probe(self):
+        self.assertNotIn('onclick="runAnalysis()" disabled', self.html)
+        self.assertNotIn("document.getElementById('analyzeBtn').disabled = !backendReady", self.html)
+        self.assertNotIn("Backend is still warming up. Please wait a moment and try again.", self.html)
+
 
 class DashboardAuthTest(unittest.TestCase):
     @classmethod

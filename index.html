@@ -651,7 +651,7 @@
                     </div>
 
                     <!-- Analyze Button -->
-                    <button id="analyzeBtn" onclick="runAnalysis()" disabled class="mt-3 w-full py-3 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button id="analyzeBtn" onclick="runAnalysis()" class="mt-3 w-full py-3 rounded bg-signal-cyan text-void font-semibold hover:bg-signal-cyan/90 transition-all hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                         <span>Analyze</span>
                     </button>
 
@@ -698,9 +698,7 @@
 
     <script>
         const API_BASE = 'https://aether-landing.onrender.com';
-        let freeUses = parseInt(localStorage.getItem('aether_free_uses')) || 0;
         let currentTab = 'paste';
-        let backendReady = false;
 
         // ========================
         // Backend Health Check
@@ -708,7 +706,6 @@
         async function checkBackendHealth() {
             const statusDot  = document.getElementById('backendStatusDot');
             const statusText = document.getElementById('backendStatusText');
-            const analyzeBtn = document.getElementById('analyzeBtn');
 
             if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse';
             if (statusText) statusText.textContent = 'Connecting to backend…';
@@ -716,18 +713,14 @@
             try {
                 const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(12000) });
                 if (res.ok) {
-                    backendReady = true;
                     if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-green-400';
                     if (statusText) statusText.textContent = 'Backend online';
-                    if (analyzeBtn && freeUses < 2) analyzeBtn.disabled = false;
                 } else {
                     throw new Error('Non-OK response');
                 }
             } catch (e) {
-                backendReady = false;
                 if (statusDot)  statusDot.className  = 'w-2 h-2 rounded-full bg-red-500';
-                if (statusText) statusText.textContent = 'Backend warming up (30s) — try again shortly';
-                if (analyzeBtn) analyzeBtn.disabled = true;
+                if (statusText) statusText.textContent = 'Backend status check failed - analysis will still try';
                 // Retry once after 20 seconds (Render cold start)
                 setTimeout(checkBackendHealth, 20000);
             }
@@ -794,18 +787,10 @@
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             resetModal();
-
-            if (freeUses >= 2) {
-                document.getElementById('analyzeBtn').classList.add('hidden');
-                document.getElementById('textInput').disabled = true;
-                document.getElementById('fileInput').disabled = true;
-                document.getElementById('subscriptionPrompt').classList.remove('hidden');
-            } else {
-                document.getElementById('analyzeBtn').classList.remove('hidden');
-                document.getElementById('textInput').disabled = false;
-                document.getElementById('fileInput').disabled = false;
-                document.getElementById('subscriptionPrompt').classList.add('hidden');
-            }
+            document.getElementById('analyzeBtn').classList.remove('hidden');
+            document.getElementById('textInput').disabled = false;
+            document.getElementById('fileInput').disabled = false;
+            document.getElementById('subscriptionPrompt').classList.add('hidden');
         }
 
         function goDashboard() {
@@ -828,8 +813,7 @@
             document.getElementById('loadingState').classList.add('hidden');
             document.getElementById('resultState').classList.add('hidden');
             document.getElementById('subscriptionPrompt').classList.add('hidden');
-            // Only re-enable if backend is confirmed alive
-            document.getElementById('analyzeBtn').disabled = !backendReady;
+            document.getElementById('analyzeBtn').disabled = false;
             document.getElementById('textInput').value = '';
             document.getElementById('fileInput').value = '';
             document.getElementById('fileName').classList.add('hidden');
@@ -859,15 +843,6 @@
         // Analysis
         // ========================
         async function runAnalysis() {
-            if (freeUses >= 2) {
-                document.getElementById('subscriptionPrompt').classList.remove('hidden');
-                return;
-            }
-            if (!backendReady) {
-                showError('Backend is still warming up. Please wait a moment and try again.');
-                return;
-            }
-
             let payload;
             let isFile = false;
 
@@ -941,8 +916,6 @@
                 const sources = chatData.sources || chatData.meta?.sources || [];
 
                 displayResults(score, content, sources);
-                freeUses++;
-                localStorage.setItem('aether_free_uses', freeUses);
             } catch (err) {
                 showError(err.message);
             } finally {
@@ -1033,10 +1006,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             initHeatmap();
             window.addEventListener('resize', initHeatmap);
-            // Disable analyze button until backend is confirmed alive
-            const analyzeBtn = document.getElementById('analyzeBtn');
-            if (analyzeBtn) analyzeBtn.disabled = true;
-            // Run health check immediately
             checkBackendHealth();
         });
 
