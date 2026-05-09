@@ -3,6 +3,7 @@ from config import get_settings
 from pinecone.pinecone import Pinecone
 
 _pc: Pinecone | None = None
+_HOSTED_INFERENCE_BATCH_SIZE = 96
 
 
 def _get_pinecone() -> Pinecone:
@@ -49,7 +50,12 @@ async def get_embeddings(texts: list[str]) -> list[list[float]]:
     """
     if not texts:
         return []
-    return await asyncio.to_thread(_embed_sync, texts, "passage")
+
+    embeddings: list[list[float]] = []
+    for i in range(0, len(texts), _HOSTED_INFERENCE_BATCH_SIZE):
+        batch = texts[i:i + _HOSTED_INFERENCE_BATCH_SIZE]
+        embeddings.extend(await asyncio.to_thread(_embed_sync, batch, "passage"))
+    return embeddings
 
 
 async def get_single_embedding(text: str) -> list[float]:

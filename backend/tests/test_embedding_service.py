@@ -31,8 +31,8 @@ class FakeInference:
         })
         return types.SimpleNamespace(
             data=[
-                types.SimpleNamespace(values=[0.1, 0.2, 0.3]),
-                types.SimpleNamespace(values=[0.4, 0.5, 0.6]),
+                types.SimpleNamespace(values=[float(i)])
+                for i, _ in enumerate(inputs)
             ]
         )
 
@@ -50,7 +50,7 @@ class EmbeddingServiceTest(unittest.TestCase):
 
         embeddings = asyncio.run(embedding_service.get_embeddings(["alpha", "beta"]))
 
-        self.assertEqual(embeddings, [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+        self.assertEqual(embeddings, [[0.0], [1.0]])
         self.assertEqual(fake_pinecone.inference.calls, [{
             "model": "llama-text-embed-v2",
             "inputs": ["alpha", "beta"],
@@ -60,6 +60,17 @@ class EmbeddingServiceTest(unittest.TestCase):
                 "dimension": 768,
             },
         }])
+
+    def test_get_embeddings_batches_hosted_inference_requests(self):
+        fake_pinecone = FakePinecone()
+        embedding_service._get_pinecone = lambda: fake_pinecone
+        embedding_service.get_settings = lambda: FakeSettings()
+
+        texts = [f"chunk {i}" for i in range(97)]
+        embeddings = asyncio.run(embedding_service.get_embeddings(texts))
+
+        self.assertEqual(len(embeddings), 97)
+        self.assertEqual([len(call["inputs"]) for call in fake_pinecone.inference.calls], [96, 1])
 
 
 if __name__ == "__main__":

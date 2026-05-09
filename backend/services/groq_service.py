@@ -48,6 +48,22 @@ def _build_context_block(chunks: list[dict]) -> str:
     return block
 
 
+def _build_system_prompt(system_prompt: str | None, context_block: str) -> str:
+    rag_instructions = (
+        "Answer questions using ONLY the provided context. "
+        "If the context does not contain the answer, say so clearly — do NOT speculate. "
+        "Cite which source [number] supports each claim. "
+        "Be concise and direct."
+    )
+    if system_prompt:
+        return f"{system_prompt}\n\n{rag_instructions}\n\nCONTEXT:\n{context_block}"
+    return (
+        "You are Entropy AI — a precise, analytical assistant. "
+        f"{rag_instructions}\n\n"
+        f"CONTEXT:\n{context_block}"
+    )
+
+
 async def generate_rag_response(
     query: str,
     context_chunks: list[dict],
@@ -65,16 +81,7 @@ async def generate_rag_response(
     close to the source material (correct for RAG use case).
     """
     context_block = _build_context_block(context_chunks)
-
-    if system_prompt is None:
-        system_prompt = (
-            "You are Entropy AI — a precise, analytical assistant. "
-            "Answer questions using ONLY the provided context. "
-            "If the context does not contain the answer, say so clearly — do NOT speculate. "
-            "Cite which source [number] supports each claim. "
-            "Be concise and direct.\n\n"
-            f"CONTEXT:\n{context_block}"
-        )
+    system_prompt = _build_system_prompt(system_prompt, context_block)
 
     messages = [{"role": "system", "content": system_prompt}]
 
@@ -132,16 +139,7 @@ async def stream_rag_response(
 ) -> AsyncGenerator[str, None]:
     """Streaming RAG response — yields token strings."""
     context_block = _build_context_block(context_chunks)
-
-    if system_prompt is None:
-        system_prompt = (
-            "You are Entropy AI — a precise, analytical assistant. "
-            "Answer questions using ONLY the provided context. "
-            "If the context does not contain the answer, say so clearly — do NOT speculate. "
-            "Cite which source [number] supports each claim. "
-            "Be concise and direct.\n\n"
-            f"CONTEXT:\n{context_block}"
-        )
+    system_prompt = _build_system_prompt(system_prompt, context_block)
 
     messages = [{"role": "system", "content": system_prompt}]
     if conversation_history:
