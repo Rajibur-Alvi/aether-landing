@@ -98,20 +98,26 @@ async def search_similar_chunks(
     )
 
     matches = []
+    raw_matches = []
     for match in results.get("matches", []):
         score = match.get("score", 0.0)
-        # Skip chunks that are not similar enough to the query
-        if score < score_threshold:
-            continue
         meta = match.get("metadata", {})
-        matches.append({
+        candidate = {
             "text": meta.get("chunk_text", ""),
             "document_id": meta.get("document_id", ""),
             "chunk_index": meta.get("chunk_index", 0),
             "score": score,
-        })
+        }
+        raw_matches.append(candidate)
+        # Skip chunks that are not similar enough to the query
+        if score < score_threshold:
+            continue
+        matches.append(candidate)
         if len(matches) >= top_k:
             break
+
+    if not matches and document_id:
+        return raw_matches[:top_k]
 
     return matches
 
