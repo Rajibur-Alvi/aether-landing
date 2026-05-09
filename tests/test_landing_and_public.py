@@ -39,6 +39,15 @@ class DashboardAuthTest(unittest.TestCase):
         self.assertIn("showAuthOverlay();", self.html)
         self.assertNotIn("} else {\n            signOut();\n        }", self.html)
 
+    def test_empty_documents_render_clears_stale_document_cards(self):
+        marker = "function renderDocuments()"
+        start = self.html.index(marker)
+        end = self.html.index("async function deleteDocument", start)
+        render_source = self.html[start:end]
+        empty_check = render_source.index("if (!documents.length)")
+        clear_call = render_source.index("list.innerHTML = '';")
+        self.assertLess(clear_call, empty_check)
+
 
 class PublicFreeScanTest(unittest.TestCase):
     def test_public_ingest_does_not_write_auth_user_metadata(self):

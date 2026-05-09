@@ -566,6 +566,7 @@ async function loadDocuments() {
 function renderDocuments() {
     document.getElementById('docsLoading').classList.add('hidden');
     const list = document.getElementById('docsList');
+    list.innerHTML = '';
     if (!documents.length) {
         document.getElementById('docsEmpty').classList.remove('hidden');
         return;
