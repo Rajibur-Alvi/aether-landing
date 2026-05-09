@@ -4,7 +4,12 @@ from models.schemas import TextIngestRequest, IngestResponse
 from middleware.auth import get_current_user
 from services.pinecone_service import upsert_document_chunks
 from services.supabase_service import get_supabase
-from utils.text_splitter import split_text, extract_text_from_pdf_bytes
+from utils.text_splitter import (
+    extract_text_from_docx_bytes,
+    extract_text_from_pdf_bytes,
+    extract_text_from_txt_bytes,
+    split_text,
+)
 from config import get_settings
 
 router = APIRouter(prefix="/ingest", tags=["Data Ingestion"])
@@ -79,7 +84,7 @@ async def ingest_file(
     title: str = Form(...),
     user_id: str = Depends(get_current_user),
 ):
-    """Ingest a file (TXT or PDF): extract → split → embed → store."""
+    """Ingest a file (TXT, PDF, or DOCX): extract → split → embed → store."""
     settings = get_settings()
     document_id = str(uuid.uuid4())
 
@@ -92,18 +97,20 @@ async def ingest_file(
             text = extract_text_from_pdf_bytes(file_bytes)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
+    elif filename.lower().endswith(".docx") or "wordprocessingml.document" in content_type:
+        try:
+            text = extract_text_from_docx_bytes(file_bytes)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
     elif filename.lower().endswith(".txt") or "text" in content_type:
         try:
-            text = file_bytes.decode("utf-8")
-        except UnicodeDecodeError:
-            try:
-                text = file_bytes.decode("latin-1")
-            except Exception:
-                raise HTTPException(status_code=400, detail="Could not decode text file")
+            text = extract_text_from_txt_bytes(file_bytes)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file type: {filename}. Supported: .txt, .pdf",
+            detail=f"Unsupported file type: {filename}. Supported: .txt, .pdf, .docx",
         )
 
     if not text.strip():

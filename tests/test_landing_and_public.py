@@ -28,6 +28,9 @@ class LandingCtaTest(unittest.TestCase):
     def test_public_chat_request_uses_free_trial_token_limit(self):
         self.assertIn("max_tokens: 512", self.html)
 
+    def test_public_upload_picker_accepts_docx(self):
+        self.assertIn('accept=".txt,.pdf,.docx"', self.html)
+
 
 class DashboardAuthTest(unittest.TestCase):
     @classmethod
@@ -48,6 +51,10 @@ class DashboardAuthTest(unittest.TestCase):
         clear_call = render_source.index("list.innerHTML = '';")
         self.assertLess(clear_call, empty_check)
 
+    def test_dashboard_upload_picker_accepts_docx(self):
+        self.assertIn('Supported: .txt, .pdf, and .docx files', self.html)
+        self.assertIn('accept=".txt,.pdf,.docx"', self.html)
+
 
 class PublicFreeScanTest(unittest.TestCase):
     def test_public_ingest_does_not_write_auth_user_metadata(self):
@@ -59,6 +66,28 @@ class PublicFreeScanTest(unittest.TestCase):
         source = (ROOT / "backend" / "routers" / "public.py").read_text()
         self.assertNotIn("Max tokens limited to 512 for free trial.", source)
         self.assertGreaterEqual(source.count("max_tokens = min(request.max_tokens or 512, 512)"), 2)
+
+    def test_public_scan_accepts_larger_trial_payloads(self):
+        source = (ROOT / "backend" / "routers" / "public.py").read_text()
+        self.assertIn("PUBLIC_TEXT_LIMIT_BYTES = 200 * 1024", source)
+        self.assertIn("PUBLIC_FILE_LIMIT_BYTES = 5 * 1024 * 1024", source)
+        self.assertIn("Maximum 200KB", source)
+        self.assertIn("Maximum 5MB", source)
+        self.assertNotIn("50 * 1024", source)
+        self.assertNotIn("Maximum 1MB", source)
+
+    def test_public_file_ingest_supports_docx(self):
+        source = (ROOT / "backend" / "routers" / "public.py").read_text()
+        self.assertIn("extract_text_from_docx_bytes", source)
+        self.assertIn('filename.lower().endswith(".docx")', source)
+        self.assertIn('SUPPORTED_FILE_TYPES = ".txt, .pdf, .docx"', source)
+        self.assertIn("Supported: {SUPPORTED_FILE_TYPES}", source)
+
+    def test_authenticated_file_ingest_supports_docx(self):
+        source = (ROOT / "backend" / "routers" / "ingest.py").read_text()
+        self.assertIn("extract_text_from_docx_bytes", source)
+        self.assertIn('filename.lower().endswith(".docx")', source)
+        self.assertIn("Supported: .txt, .pdf, .docx", source)
 
 
 class BackendAuthTest(unittest.TestCase):

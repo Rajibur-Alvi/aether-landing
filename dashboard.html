@@ -280,7 +280,7 @@
         <section id="sectionUpload" class="hidden p-6 max-w-2xl">
             <div class="mb-6">
                 <h2 class="text-xl font-semibold text-text-primary">Upload Document</h2>
-                <p class="text-sm text-text-muted mt-0.5">Supported: .txt and .pdf files</p>
+                <p class="text-sm text-text-muted mt-0.5">Supported: .txt, .pdf, and .docx files</p>
             </div>
 
             <div class="card p-6 space-y-5">
@@ -293,8 +293,8 @@
                     ondrop="handleDrop(event)">
                     <p class="text-4xl mb-3">📂</p>
                     <p class="text-text-secondary font-medium">Drop file here or click to browse</p>
-                    <p class="text-text-muted text-sm mt-1">PDF or TXT · Max 10 MB</p>
-                    <input id="uploadFile" type="file" accept=".txt,.pdf" class="hidden" onchange="onFileSelected()">
+                    <p class="text-text-muted text-sm mt-1">PDF, DOCX, or TXT · Max 10 MB</p>
+                    <input id="uploadFile" type="file" accept=".txt,.pdf,.docx" class="hidden" onchange="onFileSelected()">
                 </div>
 
                 <div id="selectedFile" class="hidden flex items-center gap-3 p-3 rounded-lg bg-surface-elevated border border-graphite">

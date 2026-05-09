@@ -1,4 +1,5 @@
 import re
+from io import BytesIO
 
 
 def split_text(
@@ -172,3 +173,41 @@ def extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
             raise ValueError(f"PDF extraction failed (no pymupdf): {e}")
     except Exception as e:
         raise ValueError(f"PDF extraction failed: {e}")
+
+
+def extract_text_from_docx_bytes(file_bytes: bytes) -> str:
+    """Extract visible paragraph and table text from a DOCX file."""
+    try:
+        from docx import Document
+
+        document = Document(BytesIO(file_bytes))
+        parts: list[str] = []
+
+        for paragraph in document.paragraphs:
+            text = paragraph.text.strip()
+            if text:
+                parts.append(text)
+
+        for table in document.tables:
+            for row in table.rows:
+                cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if cells:
+                    parts.append(" | ".join(cells))
+
+        return "\n\n".join(parts)
+
+    except ImportError as e:
+        raise ValueError(f"DOCX extraction failed (python-docx not installed): {e}")
+    except Exception as e:
+        raise ValueError(f"DOCX extraction failed: {e}")
+
+
+def extract_text_from_txt_bytes(file_bytes: bytes) -> str:
+    """Decode plain-text uploads using UTF-8, then latin-1 as a permissive fallback."""
+    try:
+        return file_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return file_bytes.decode("latin-1")
+        except Exception as e:
+            raise ValueError(f"Could not decode text file: {e}")

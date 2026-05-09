@@ -7,12 +7,21 @@ from sse_starlette.sse import EventSourceResponse
 from models.schemas import TextIngestRequest, IngestResponse, ChatRequest, ChatMessageResponse, ChatMeta, ChatSource
 from services.pinecone_service import upsert_document_chunks, search_similar_chunks
 from services.groq_service import generate_rag_response, stream_rag_response
-from utils.text_splitter import split_text, extract_text_from_pdf_bytes
+from utils.text_splitter import (
+    extract_text_from_docx_bytes,
+    extract_text_from_pdf_bytes,
+    extract_text_from_txt_bytes,
+    split_text,
+)
 from config import get_settings
 
 router = APIRouter(prefix="/public", tags=["Public Testing"])
 
 TEST_USER_ID = "test-user-entropy"
+PUBLIC_TEXT_LIMIT_BYTES = 200 * 1024
+PUBLIC_FILE_LIMIT_BYTES = 5 * 1024 * 1024
+PUBLIC_EXTRACTED_TEXT_LIMIT_BYTES = 200 * 1024
+SUPPORTED_FILE_TYPES = ".txt, .pdf, .docx"
 
 MODEL_MAP = {
     "fast": "llama-3.1-8b-instant",
@@ -21,13 +30,26 @@ MODEL_MAP = {
 }
 
 
+def _utf8_size(text: str) -> int:
+    return len(text.encode("utf-8"))
+
+
+def _reject_if_public_text_too_large(
+    text: str,
+    label: str = "Content",
+    limit_bytes: int = PUBLIC_EXTRACTED_TEXT_LIMIT_BYTES,
+) -> None:
+    if _utf8_size(text) > limit_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{label} too large for free trial. Maximum 200KB allowed.",
+        )
+
+
 @router.post("/ingest/text", response_model=IngestResponse)
 async def public_ingest_text(request: TextIngestRequest):
-    """Public ingest text for free trials. Limited to 50KB content."""
-    # Free trial limits
-    content_size = len(request.content.encode("utf-8"))
-    if content_size > 50 * 1024:  # 50KB limit
-        raise HTTPException(status_code=400, detail="Content too large for free trial. Maximum 50KB allowed.")
+    """Public ingest text for free trials. Limited to 200KB content."""
+    _reject_if_public_text_too_large(request.content, limit_bytes=PUBLIC_TEXT_LIMIT_BYTES)
 
     settings = get_settings()
     document_id = request.document_id or str(uuid.uuid4())
@@ -63,15 +85,14 @@ async def public_ingest_file(
     file: UploadFile = File(...),
     title: str = Form(...),
 ):
-    """Public ingest file for free trials. Limited to 1MB files."""
+    """Public ingest file for free trials. Limited to 5MB files and 200KB extracted text."""
     settings = get_settings()
     document_id = str(uuid.uuid4())
 
     file_bytes = await file.read()
 
-    # Free trial limits
-    if len(file_bytes) > 1024 * 1024:  # 1MB limit
-        raise HTTPException(status_code=400, detail="File too large for free trial. Maximum 1MB allowed.")
+    if len(file_bytes) > PUBLIC_FILE_LIMIT_BYTES:
+        raise HTTPException(status_code=400, detail="File too large for free trial. Maximum 5MB allowed.")
 
     filename = file.filename or "untitled"
 
@@ -81,22 +102,25 @@ async def public_ingest_file(
             text = extract_text_from_pdf_bytes(file_bytes)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
+    elif filename.lower().endswith(".docx") or "wordprocessingml.document" in content_type:
+        try:
+            text = extract_text_from_docx_bytes(file_bytes)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
     elif filename.lower().endswith(".txt") or "text" in content_type:
         try:
-            text = file_bytes.decode("utf-8")
-        except UnicodeDecodeError:
-            try:
-                text = file_bytes.decode("latin-1")
-            except Exception:
-                raise HTTPException(status_code=400, detail="Could not decode text file")
+            text = extract_text_from_txt_bytes(file_bytes)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file type: {filename}. Supported: .txt, .pdf",
+            detail=f"Unsupported file type: {filename}. Supported: {SUPPORTED_FILE_TYPES}",
         )
 
     if not text.strip():
         raise HTTPException(status_code=400, detail="No text content extracted from file")
+    _reject_if_public_text_too_large(text, "Extracted text")
 
     chunks = split_text(
         text,
