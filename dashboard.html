@@ -493,12 +493,16 @@ async function onSessionReady(session) {
     loadUserPlan();
 }
 
-async function signOut() {
-    await sb.auth.signOut();
+function showAuthOverlay() {
     currentUser = null; authToken = null;
     document.getElementById('appShell').classList.add('hidden');
     document.getElementById('appShell').classList.remove('flex');
     document.getElementById('authOverlay').classList.remove('hidden');
+}
+
+async function signOut() {
+    await sb.auth.signOut();
+    showAuthOverlay();
 }
 
 function confirmSignOut() {
@@ -915,7 +919,7 @@ function showToast(msg) {
             authToken   = session.access_token;
             currentUser = session.user;
         } else {
-            signOut();
+            showAuthOverlay();
         }
     });
 })();

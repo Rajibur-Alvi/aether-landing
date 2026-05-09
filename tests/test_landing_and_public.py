@@ -29,6 +29,17 @@ class LandingCtaTest(unittest.TestCase):
         self.assertIn("max_tokens: 512", self.html)
 
 
+class DashboardAuthTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.html = (ROOT / "dashboard.html").read_text()
+
+    def test_missing_auth_session_does_not_call_remote_signout_loop(self):
+        self.assertIn("function showAuthOverlay()", self.html)
+        self.assertIn("showAuthOverlay();", self.html)
+        self.assertNotIn("} else {\n            signOut();\n        }", self.html)
+
+
 class PublicFreeScanTest(unittest.TestCase):
     def test_public_ingest_does_not_write_auth_user_metadata(self):
         source = (ROOT / "backend" / "routers" / "public.py").read_text()
