@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: entropy-backend
+    name: aether-landing
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
@@ -20,6 +20,18 @@ services:
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: LEMONSQUEEZY_API_KEY
+        sync: false
+      - key: LEMONSQUEEZY_STORE_ID
+        sync: false
+      - key: LEMONSQUEEZY_SIGNAL_VARIANT_ID
+        sync: false
+      - key: LEMONSQUEEZY_SIGNAL_PRO_VARIANT_ID
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGINS_RAW
         sync: false
       - key: ENVIRONMENT
         value: production

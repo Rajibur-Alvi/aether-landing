@@ -43,6 +43,11 @@ class LandingCtaTest(unittest.TestCase):
         self.assertNotIn("document.getElementById('analyzeBtn').disabled = !backendReady", self.html)
         self.assertNotIn("Backend is still warming up. Please wait a moment and try again.", self.html)
 
+    def test_heatmap_uses_runtime_grid_columns_instead_of_missing_tailwind_classes(self):
+        self.assertNotIn("grid-cols-15", self.html)
+        self.assertNotIn("grid-cols-20", self.html)
+        self.assertIn("grid.style.gridTemplateColumns", self.html)
+
 
 class DashboardAuthTest(unittest.TestCase):
     @classmethod
@@ -109,6 +114,28 @@ class BackendAuthTest(unittest.TestCase):
         self.assertIn(".well-known/jwks.json", source)
         self.assertIn('"ES256"', source)
         self.assertNotIn('algorithms=["HS256"]', source)
+
+
+class DeploymentConfigTest(unittest.TestCase):
+    def test_render_env_vars_are_unique_and_target_live_service(self):
+        source = (ROOT / "backend" / "render.yaml").read_text()
+        self.assertIn("name: aether-landing", source)
+        self.assertEqual(source.count("key: SUPABASE_JWT_SECRET"), 1)
+
+    def test_frontend_library_defaults_to_live_render_backend(self):
+        source = (ROOT / "frontend-lib" / "api.ts").read_text()
+        self.assertIn('https://aether-landing.onrender.com', source)
+        self.assertNotIn('https://entropy-backend.onrender.com', source)
+
+    def test_pinecone_setup_uses_hosted_embedding_dimension(self):
+        deploy = (ROOT / "DEPLOY.md").read_text()
+        create_index = (ROOT / "backend" / "create_index.py").read_text()
+
+        self.assertIn("Dimension: **768**", deploy)
+        self.assertIn("dim=768", deploy)
+        self.assertNotIn("Dimension: **384**", deploy)
+        self.assertNotIn("dim=384", deploy)
+        self.assertIn("dimension=settings.pinecone_dimension", create_index)
 
 
 if __name__ == "__main__":

@@ -45,7 +45,7 @@ async def health_check():
         status="operational" if all(
             s == "healthy" for s in [pinecone_status, supabase_status, groq_status]
         ) else "degraded",
-        version="1.0.0",
+        version="2.0.0",
         services={
             "pinecone": {"status": pinecone_status, "detail": pinecone_detail},
             "supabase": {"status": supabase_status, "detail": supabase_detail},

@@ -1,6 +1,6 @@
-# Entropy Backend — Deploy Checklist
+# Aether Backend — Deploy Checklist
 
-## BEFORE YOU PUSH: Collect these 6 values first
+## BEFORE YOU PUSH: Collect these backend values first
 
 | # | Key | Where to get it |
 |---|-----|-----------------|
@@ -9,7 +9,8 @@
 | 3 | `SUPABASE_URL` | Supabase Dashboard → Settings → API → Project URL |
 | 4 | `SUPABASE_SERVICE_KEY` | Supabase Dashboard → Settings → API → service_role key |
 | 5 | `SUPABASE_JWT_SECRET` | Supabase Dashboard → Settings → API → JWT Secret |
-| 6 | Your Render URL | Set after Step 4 (e.g. https://entropy-backend.onrender.com) |
+| 6 | Lemon Squeezy values | API key, store ID, and Signal/Signal Pro variant IDs |
+| 7 | Your Render URL | Set after Step 4 (e.g. https://aether-landing.onrender.com) |
 
 ---
 
@@ -17,7 +18,7 @@
 
 1. Go to app.pinecone.io → Create Index
 2. Name: `entropy-vectors`
-3. Dimension: **384**
+3. Dimension: **768**
 4. Metric: **cosine**
 5. Cloud: aws / us-east-1
 6. Click Create
@@ -65,6 +66,12 @@ PINECONE_INDEX_NAME=entropy-vectors
 SUPABASE_URL=           ← your value
 SUPABASE_SERVICE_KEY=   ← your value
 SUPABASE_JWT_SECRET=    ← your value
+LEMONSQUEEZY_API_KEY=   ← your value
+LEMONSQUEEZY_STORE_ID=  ← your value
+LEMONSQUEEZY_SIGNAL_VARIANT_ID=      ← your value
+LEMONSQUEEZY_SIGNAL_PRO_VARIANT_ID=  ← your value
+APP_URL=https://your-frontend-url
+CORS_ORIGINS_RAW=https://your-frontend-url
 ENVIRONMENT=production
 ```
 
@@ -133,8 +140,8 @@ This keeps Render's free tier awake.
 | Error | Fix |
 |-------|-----|
 | 30s cold start | Set up UptimeRobot (Step 8) |
-| "Vector search failed" | Check Pinecone index exists, dim=384, key is correct |
+| "Vector search failed" | Check Pinecone index exists, dim=768, key is correct |
 | "Groq inference failed" | Check GROQ_API_KEY in Render |
 | 401 Invalid token | Check SUPABASE_JWT_SECRET matches your Supabase project |
 | "Metadata storage failed" | Re-run the SQL migration |
-| CORS error | Add your Vercel URL to cors_origins in config.py |
+| CORS error | Add your frontend URL to `CORS_ORIGINS_RAW` on Render |

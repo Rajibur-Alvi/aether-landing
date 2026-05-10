@@ -50,9 +50,9 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-# Origins are loaded from the CORS_ORIGINS env var (comma-separated list).
-# Set it on Render to your Vercel URL, e.g.:
-#   CORS_ORIGINS=https://yourapp.vercel.app,https://www.yourapp.com
+# Origins are loaded from the CORS_ORIGINS_RAW env var (comma-separated list).
+# Set it on Render to your frontend URL, e.g.:
+#   CORS_ORIGINS_RAW=https://yourapp.vercel.app,https://www.yourapp.com
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,

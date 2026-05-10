@@ -4,7 +4,7 @@
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://entropy-backend.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://aether-landing.onrender.com";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
@@ -60,6 +60,8 @@ export interface UserProfile {
   entropy_level: number;
   ghost_mode: boolean;
   theme: string;
+  plan: "free" | "signal" | "signal_pro";
+  subscription_status: string;
   created_at: string;
   updated_at: string;
 }

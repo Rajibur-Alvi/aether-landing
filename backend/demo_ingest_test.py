@@ -25,37 +25,42 @@ payload = {
     )
 }
 
-json_data = json.dumps(payload).encode('utf-8')
-req = urllib.request.Request(INGEST_URL, data=json_data, headers={'Content-Type': 'application/json'})
-print('Sending ingest request...')
-try:
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        print('Ingest status:', resp.status)
-        ingest_resp = json.loads(resp.read().decode('utf-8'))
-        print('Ingest response:', json.dumps(ingest_resp, indent=2))
-except urllib.error.HTTPError as e:
-    print('Ingest HTTP error:', e.code, e.read().decode('utf-8'))
-    raise
-except Exception as e:
-    print('Ingest failed:', e)
-    raise
-
-if ingest_resp.get('document_id'):
-    ask_payload = {
-        'message': 'What does the demo document say the system is built to do?',
-        'document_id': ingest_resp['document_id'],
-    }
-    ask_data = json.dumps(ask_payload).encode('utf-8')
-    ask_req = urllib.request.Request(CHAT_URL, data=ask_data, headers={'Content-Type': 'application/json'})
-    print('Sending chat request...')
+def run_demo():
+    json_data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(INGEST_URL, data=json_data, headers={'Content-Type': 'application/json'})
+    print('Sending ingest request...')
     try:
-        with urllib.request.urlopen(ask_req, timeout=120) as resp:
-            print('Chat status:', resp.status)
-            chat_resp = json.loads(resp.read().decode('utf-8'))
-            print('Chat response:', json.dumps(chat_resp, indent=2))
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            print('Ingest status:', resp.status)
+            ingest_resp = json.loads(resp.read().decode('utf-8'))
+            print('Ingest response:', json.dumps(ingest_resp, indent=2))
     except urllib.error.HTTPError as e:
-        print('Chat HTTP error:', e.code, e.read().decode('utf-8'))
+        print('Ingest HTTP error:', e.code, e.read().decode('utf-8'))
+        raise
     except Exception as e:
-        print('Chat failed:', e)
-else:
-    print('No document_id returned; skipping chat test.')
+        print('Ingest failed:', e)
+        raise
+
+    if ingest_resp.get('document_id'):
+        ask_payload = {
+            'message': 'What does the demo document say the system is built to do?',
+            'document_id': ingest_resp['document_id'],
+        }
+        ask_data = json.dumps(ask_payload).encode('utf-8')
+        ask_req = urllib.request.Request(CHAT_URL, data=ask_data, headers={'Content-Type': 'application/json'})
+        print('Sending chat request...')
+        try:
+            with urllib.request.urlopen(ask_req, timeout=120) as resp:
+                print('Chat status:', resp.status)
+                chat_resp = json.loads(resp.read().decode('utf-8'))
+                print('Chat response:', json.dumps(chat_resp, indent=2))
+        except urllib.error.HTTPError as e:
+            print('Chat HTTP error:', e.code, e.read().decode('utf-8'))
+        except Exception as e:
+            print('Chat failed:', e)
+    else:
+        print('No document_id returned; skipping chat test.')
+
+
+if __name__ == "__main__":
+    run_demo()

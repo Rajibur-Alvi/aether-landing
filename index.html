@@ -334,7 +334,7 @@
                 </div>
 
                 <!-- Heatmap Grid -->
-                <div id="heatmapGrid" class="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-20 gap-1 sm:gap-1.5">
+                <div id="heatmapGrid" class="grid gap-1 sm:gap-1.5">
                     <!-- JS will populate this -->
                 </div>
 
@@ -746,7 +746,8 @@
             const grid = document.getElementById('heatmapGrid');
             if (!grid) return;
             const cols = window.innerWidth >= 768 ? 20 : (window.innerWidth >= 640 ? 15 : 10);
-            grid.className = `grid gap-1 sm:gap-1.5 grid-cols-${cols}`;
+            grid.className = 'grid gap-1 sm:gap-1.5';
+            grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
 
             const totalCells = cols * 8;
             grid.innerHTML = '';

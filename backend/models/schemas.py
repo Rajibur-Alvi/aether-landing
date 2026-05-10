@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
 from enum import Enum
@@ -7,9 +7,9 @@ from enum import Enum
 # ── Chat ──
 
 class ModelOption(str, Enum):
-    fast = "llama-3.1-8b-instant"
-    balanced = "llama-3.3-70b-versatile"
-    thorough = "llama-3.3-70b-versatile"
+    fast = "fast"
+    balanced = "balanced"
+    thorough = "thorough"
 
 
 class ChatRequest(BaseModel):
@@ -19,6 +19,15 @@ class ChatRequest(BaseModel):
     model: ModelOption = ModelOption.balanced
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
+
+    @field_validator("model", mode="before")
+    @classmethod
+    def normalize_model_option(cls, value):
+        legacy_model_map = {
+            "llama-3.1-8b-instant": "fast",
+            "llama-3.3-70b-versatile": "balanced",
+        }
+        return legacy_model_map.get(value, value)
 
 
 class ChatSource(BaseModel):
@@ -33,7 +42,7 @@ class ChatMeta(BaseModel):
     latency_ms: int = 0
     tokens_per_second: float = 0.0
     data_density: int = 0
-    sources: list[ChatSource] = []
+    sources: list[ChatSource] = Field(default_factory=list)
 
 
 class ChatMessageResponse(BaseModel):
@@ -87,6 +96,8 @@ class UserProfileResponse(BaseModel):
     entropy_level: int = 50
     ghost_mode: bool = False
     theme: str = "entropy"
+    plan: str = "free"
+    subscription_status: str = "inactive"
     created_at: datetime
     updated_at: datetime
 
@@ -121,7 +132,7 @@ class UpdateCommandCenterRequest(BaseModel):
 
 class DarkDataEvent(BaseModel):
     event_type: str
-    event_data: dict = {}
+    event_data: dict = Field(default_factory=dict)
 
 
 class DarkDataResponse(BaseModel):

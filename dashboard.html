@@ -857,12 +857,12 @@ async function saveSettings() {
 async function loadUserPlan() {
     try {
         const data = await apiFetch('/api/user/profile');
-        const plan = data.plan || 'explorer';
-        const planNames = { explorer: 'Explorer (Free)', signal: 'Signal', signal_pro: 'Signal Pro' };
+        const plan = data.plan || 'free';
+        const planNames = { free: 'Explorer (Free)', signal: 'Signal', signal_pro: 'Signal Pro' };
         const label = planNames[plan] || plan;
         document.getElementById('currentPlan').textContent = label;
         document.getElementById('planBadge').textContent   = plan.toUpperCase().replace('_', ' ');
-        if (plan !== 'explorer') {
+        if (plan !== 'free') {
             document.getElementById('planBadge').className = 'text-xs font-mono px-2 py-0.5 rounded bg-signal-cyan/20 text-signal-cyan';
         }
     } catch (e) {
